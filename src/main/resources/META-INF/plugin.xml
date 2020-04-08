@@ -1,6 +1,6 @@
 <idea-plugin>
   <id>com.asherbernardi.jsgfplugin</id>
-  <name>JsgfPlugin</name>
+  <name>Jsgf</name>
   <vendor email="asherbernardi@gmail.com" url="https://github.com/asherbernardi/jsgfplugin">Asher Bernardi</vendor>
 
   <idea-version since-build="193.6494.35"/>
