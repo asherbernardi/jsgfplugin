@@ -1,0 +1,20 @@
+#JSGF V1.0 ASCII en_US;
+// Testing comment
+grammar testParsing;
+/* Block
+   test */
+import <com.asherbernardi.anotherGram.*>;
+import <com.asherbernardi.anotherGrammar.anotherRule>;
+
+<rule1> = this | a rule;
+<&^%|oeunth> = ((1 2 [3 | 4] {tag}) | ((5) /*inner block*/ | 6) );
+<paren1> = (();
+<paren2> = ());
+/**
+ * @example here
+ * @author tag
+ */
+<backToNormal> = /3/ light | /4/ weights | /5/ heavy;
+<> = empty (alternative | );
+public <publicRule> = <rule1>;
+&

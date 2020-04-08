@@ -1,0 +1,63 @@
+<idea-plugin>
+  <id>com.asherbernardi.jsgfplugin</id>
+  <name>JsgfPlugin</name>
+  <vendor email="asherbernardi@gmail.com" url="https://github.com/asherbernardi/jsgfplugin">Asher Bernardi</vendor>
+
+  <idea-version since-build="193.6494.35"/>
+
+  <description><![CDATA[
+<p>This is a plugin for all JetBrains IDEs to support the JSGF file format.</p>
+<ul>
+<li> syntax highlighting
+<li> syntax error checking
+<li> semantic error checking
+<li> go to declaration
+<li> find usages
+<li> automatic renaming
+<li> parenthesis, bracket, brace, and angle bracket matching
+<li> search for symbol includes all declared rule names
+<li> view structure
+<li> code completion
+</ul>
+  ]]></description>
+
+  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+       on how to target different products -->
+  <depends>com.intellij.modules.platform</depends>
+  <depends>com.intellij.modules.lang</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <fileType name="Jsgf file" implementationClass="com.asherbernardi.jsgfplugin.JsgfFileType"
+      fieldName="INSTANCE" language="Jsgf" extensions="jsgf;gram"/>
+    <lang.parserDefinition language="Jsgf"
+      implementationClass="com.asherbernardi.jsgfplugin.JsgfParserDefinition"/>
+    <lang.syntaxHighlighterFactory language="Jsgf"
+      implementationClass="com.asherbernardi.jsgfplugin.JsgfSyntaxHighlighterFactory"/>
+    <colorSettingsPage implementation="com.asherbernardi.jsgfplugin.JsgfColorSettingsPage"/>
+    <annotator language="Jsgf" implementationClass="com.asherbernardi.jsgfplugin.JsgfGrammarErrorAnnotator"/>
+    <annotator language="Jsgf" implementationClass="com.asherbernardi.jsgfplugin.JsgfAnnotator"/>
+    <lang.elementManipulator forClass="com.asherbernardi.jsgfplugin.psi.impl.RuleReferenceElement"
+        implementationClass="com.asherbernardi.jsgfplugin.psi.manipulators.RuleReferenceManipulator"/>
+    <lang.elementManipulator forClass="com.asherbernardi.jsgfplugin.psi.impl.ImportNameElement"
+      implementationClass="com.asherbernardi.jsgfplugin.psi.manipulators.ImportNameManipulator"/>
+    <lang.refactoringSupport language="Jsgf" implementationClass="com.asherbernardi.jsgfplugin.JsgfRefactoringSupportProvider"/>
+    <lang.findUsagesProvider language="Jsgf"
+      implementationClass="com.asherbernardi.jsgfplugin.JsgfFindUsagesProvider"/>
+<!--language should be included here, even though it says it is a bug. Otherwise, it doesn't work-->
+    <gotoSymbolContributor language="Jsgf"
+      implementation="com.asherbernardi.jsgfplugin.JsgfChooseByNameContributor"/>
+    <lang.psiStructureViewFactory language="Jsgf"
+      implementationClass="com.asherbernardi.jsgfplugin.JsgfStructureViewFactory"/>
+    <lang.commenter language="Jsgf" implementationClass="com.asherbernardi.jsgfplugin.JsgfCommenter"/>
+    <lang.braceMatcher language="Jsgf" implementationClass="com.asherbernardi.jsgfplugin.JsgfPairedBraceMatcher"/>
+    <typedHandler implementation="com.asherbernardi.jsgfplugin.JsgfArrowTypedHandler"/>
+    <backspaceHandlerDelegate implementation="com.asherbernardi.jsgfplugin.JsgfArrowBackspaceHandler"/>
+<!--    This quote handler wasn't working properly, so I gave up on it -->
+<!--    <quoteHandler fileType="Jsgf file" className="com.asherbernardi.jsgfplugin.JsgfQuoteHandler"/>-->
+    <lang.namesValidator language="Jsgf" implementationClass="com.asherbernardi.jsgfplugin.JsgfRuleNameIdentifierValidator"/>
+  </extensions>
+
+  <actions>
+    <!-- No actions for this plugin yet -->
+  </actions>
+</idea-plugin>

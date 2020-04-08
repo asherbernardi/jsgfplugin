@@ -1,0 +1,42 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.intellij' version '0.4.16'
+    id 'antlr'
+}
+
+group 'com.asherbernardi'
+version '1.0'
+
+patchPluginXml {
+    changeNotes "No change notes - first version"
+}
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+// Include the generated files in the source set
+sourceSets.main.java.srcDirs 'src/main/antlr'
+
+dependencies {
+    antlr("org.antlr:antlr4:4.8") { // use ANTLR version 4
+        exclude group:'com.ibm.icu', module:'icu4j'
+    }
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    compile "org.antlr:antlr4-intellij-adaptor:0.1"
+}
+
+// See https://github.com/JetBrains/gradle-intellij-plugin/
+intellij {
+    version '2019.3.3'
+}
+
+generateGrammarSource {
+    arguments += ["-package", "com.asherbernardi.jsgfplugin", "-Xexact-output-dir"]
+}
+
+publishPlugin {
+    token intellijPublishToken
+}

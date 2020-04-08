@@ -1,0 +1,4 @@
+#JSGF V1.0;
+grammar other.ReferenceTestOther;
+public <other1> = 1;
+<other2> = 2;

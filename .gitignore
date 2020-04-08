@@ -1,0 +1,6 @@
+gradle.properties
+gen/
+build/
+.gradle/
+.idea/
+
