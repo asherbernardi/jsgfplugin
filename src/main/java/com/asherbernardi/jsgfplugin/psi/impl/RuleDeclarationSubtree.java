@@ -33,10 +33,7 @@ public class RuleDeclarationSubtree extends IdentifierDefSubtree {
   public RuleDeclarationNameElement getRuleNameElement() {
     RuleDeclarationNameElement ruleName = PsiTreeUtil
         .getChildOfType(this, RuleDeclarationNameElement.class);
-    if (ruleName != null) {
-      return ruleName;
-    }
-    return null;
+    return ruleName;
   }
 
   @Override

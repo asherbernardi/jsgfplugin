@@ -24,7 +24,8 @@ public class JsgfAnnotator implements Annotator {
       Annotation annotation = holder.createInfoAnnotation(element, null);
       annotation.setTextAttributes(JsgfSyntaxHighlighter.TERMINAL);
     }
-    if (element.getNode().getElementType() instanceof TokenIElementType) {
+    // Annotate documentation comments
+    else if (element.getNode().getElementType() instanceof TokenIElementType) {
       int ttype = ((TokenIElementType) element.getNode().getElementType()).getANTLRTokenType();
       if (ttype == JsgfLexer.DOCCOMMENT) {
         int fileOffset = element.getTextOffset();

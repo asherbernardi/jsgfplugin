@@ -64,7 +64,8 @@ fragment LETTER_EXT:
   | '\u4E00'..'\u9FFF'
   | '\uF900'..'\uFAFF';
 // Taken from http://java.coe.psu.ac.th/Extension/JavaSpeech1.0/JSGF.pdf
-fragment OTHER_PUNCTUATION : '_' | '+' | '-' | ':' | ';' | ',' | '=' | '|' | '/' | '\\' | '(' | ')' | '[' | ']' | '@' | '#' | '%' | '!' | '^' | '&' | '~';
+fragment OTHER_PUNCTUATION: '_' | '+' | '-' | ':' | ';' | ',' | '=' | '|' | '/' | '\\' | '(' | ')'
+                          | '[' | ']' | '@' | '#' | '%' | '!' | '^' | '&' | '~' | '$';
 fragment CHINESE_ZERO: '\u3007';
 fragment SUPERSCRIPT_DIGIT: '\u00B2'..'\u00B3';
 fragment DIGIT: ('0'..'9');

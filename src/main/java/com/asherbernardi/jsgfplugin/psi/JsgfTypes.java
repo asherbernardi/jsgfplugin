@@ -30,7 +30,7 @@ public class JsgfTypes {
           JsgfLexer.NL, JsgfLexer.SPACE);
   public static final TokenSet COMMENTS =
       PSIElementTypeFactory.createTokenSet(JsgfLanguage.INSTANCE,
-          JsgfLexer.COMMENT, JsgfLexer.BLOCKCOMMENT);
+          JsgfLexer.COMMENT, JsgfLexer.BLOCKCOMMENT, JsgfLexer.DOCCOMMENT);
   public static final TokenSet STRING =
       PSIElementTypeFactory.createTokenSet(JsgfLanguage.INSTANCE,
           JsgfLexer.QUOTE, JsgfLexer.STRING_TEXT);

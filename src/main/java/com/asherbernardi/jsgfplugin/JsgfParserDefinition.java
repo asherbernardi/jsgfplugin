@@ -93,11 +93,8 @@ public class JsgfParserDefinition implements ParserDefinition {
         // the actual node by creating a new file then re-parsing that, and
         // in that case, it passes in a Token type to be parsed separately
         else if (root instanceof TokenIElementType) {
-          switch (((TokenIElementType) root).getANTLRTokenType()) {
-            case JsgfLexer.RULE_NAME_IDENTIFIER:
-              return ((JsgfParser) parser).parseJustRuleName();
-            default:
-              return null;
+          if (((TokenIElementType) root).getANTLRTokenType() == JsgfLexer.RULE_NAME_IDENTIFIER) {
+            return ((JsgfParser) parser).parseJustRuleName();
           }
         }
         return null;

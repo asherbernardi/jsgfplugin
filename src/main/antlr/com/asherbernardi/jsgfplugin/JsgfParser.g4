@@ -128,7 +128,7 @@ item
     |
     PLUS
   )?
-  jsgfTag*
+//  jsgfTag*
 ;
 
 jsgfTag

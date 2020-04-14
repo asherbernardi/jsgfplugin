@@ -44,7 +44,6 @@ public class RuleReferenceReference extends PsiReferenceBase<RuleReferenceElemen
    * Is null unless reference mode is FULLY_QUALIFIED.
    */
   private String packageName = null;
-  public boolean justResolved;
   private REFERENCE_MODE mode;
 
   /**

@@ -23,7 +23,7 @@ import org.antlr.intellij.adaptor.psi.Trees;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class RuleNameElement extends ANTLRPsiNode implements PsiNamedElement {
+public abstract class RuleNameElement extends ANTLRPsiNode implements PsiNamedElement {
 
   public RuleNameElement(@NotNull ASTNode node) {
     super(node);
@@ -93,4 +93,6 @@ public class RuleNameElement extends ANTLRPsiNode implements PsiNamedElement {
     }
     return new LocalSearchScope(getContainingFile());
   }
+
+  public abstract String toString();
 }

@@ -90,7 +90,7 @@ public class JsgfUtil {
   public static List<PsiElement> findImportRules(Project project, ImportNameElement importName) {
     List<PsiElement> result = new ArrayList<>();
     for (JsgfFile file : findFilesByPackage(project, importName)) {
-      if ("*".equals(importName.getUnqualifiedName()))
+      if (importName.isStarImport())
         result.addAll(findRulesInFile(file, true));
       else
         result.addAll(findRulesInFile(file, importName.getUnqualifiedName(), true));
@@ -154,7 +154,7 @@ public class JsgfUtil {
         result.add(simpleFile);
       }
       // Match on the directory and file name
-      if (!importDirectoryPath.isEmpty() && file.getParentFile().toPath().endsWith(importDirectoryPath)) {
+      else if (!importDirectoryPath.isEmpty() && file.getParentFile().toPath().endsWith(importDirectoryPath)) {
         for (FileNameMatcher matcher : extensions) {
           String fileName = file.getName();
           String noExtension = fileName.substring(0, (fileName.lastIndexOf('.')>-1?fileName.lastIndexOf('.'):fileName.length()));
