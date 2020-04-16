@@ -9,6 +9,8 @@ In Intellij go to "Settings > Plugins", click the "Marketplace" tab, and type "j
 The Jsgf plugin should be the first option.  
 Click install, then restart your IDE.
 
+_NOTE:_ You must have Intellij installed with version 2019.3.3 or later, otherwise the plugin will not show up in marketplace.
+
 ## What this plugin supports
 
 - syntax highlighting
