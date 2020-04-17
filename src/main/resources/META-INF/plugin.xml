@@ -3,24 +3,6 @@
   <name>Jsgf</name>
   <vendor email="asherbernardi@gmail.com" url="https://github.com/asherbernardi/jsgfplugin">Asher Bernardi</vendor>
 
-  <idea-version since-build="193.6494.35"/>
-
-  <description><![CDATA[
-<p>This is a plugin for all JetBrains IDEs to support the JSGF file format.</p>
-<ul>
-<li> syntax highlighting
-<li> syntax error checking
-<li> semantic error checking
-<li> go to declaration
-<li> find usages
-<li> automatic renaming
-<li> parenthesis, bracket, brace, and angle bracket matching
-<li> search for symbol includes all declared rule names
-<li> view structure
-<li> code completion
-</ul>
-  ]]></description>
-
   <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->
   <depends>com.intellij.modules.platform</depends>

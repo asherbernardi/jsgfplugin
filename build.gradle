@@ -5,10 +5,26 @@ plugins {
 }
 
 group 'com.asherbernardi'
-version '1.0'
+version '1.0.1'
 
 patchPluginXml {
-    changeNotes "No change notes - first version"
+    pluginDescription '''
+<p>This is a plugin for all JetBrains IDEs to support the JSGF file format.</p>
+<ul>
+    <li> syntax highlighting
+    <li> syntax error checking
+    <li> semantic error checking
+    <li> go to declaration
+    <li> find usages
+    <li> automatic renaming
+    <li> parenthesis, bracket, brace, and angle bracket matching
+    <li> search for symbol includes all declared rule names
+    <li> view structure
+    <li> code completion
+</ul>'''
+    changeNotes "Supports newest Intellij update version 2020.1, build 201.6668.121"
+    sinceBuild "193.6494.35"
+    untilBuild "201.6668.121"
 }
 
 sourceCompatibility = 1.8
@@ -30,7 +46,7 @@ dependencies {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version '2019.3.3'
+    version '2020.1'
 }
 
 generateGrammarSource {

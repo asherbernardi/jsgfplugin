@@ -9,7 +9,7 @@ In Intellij go to "Settings > Plugins", click the "Marketplace" tab, and type "j
 The Jsgf plugin should be the first option.  
 Click install, then restart your IDE.
 
-_NOTE:_ You must have Intellij installed with version 2019.3.3 or later, otherwise the plugin will not show up in marketplace.
+_NOTE:_ You must have Intellij installed with version between 2019.3.3 and 2020.1, otherwise the plugin may not show up in Marketplace.
 
 ## What this plugin supports
 
