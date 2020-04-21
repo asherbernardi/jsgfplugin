@@ -103,8 +103,8 @@ public class RuleReferenceReference extends PsiReferenceBase<RuleReferenceElemen
     // If we can't find the rule declared in this grammar, or this not an unqualified rule check the imports
     // We only use cached import resolutions, since we assume that the imports would be resolved
     // before the rule references.
-    if (results.isEmpty() || mode != REFERENCE_MODE.UNQUALIFIED) {
-      Set<ImportNameElement> importNames = file.getImports();
+    Set<ImportNameElement> importNames = file.getImports();
+    if ((results.isEmpty() || mode != REFERENCE_MODE.UNQUALIFIED) && importNames != null) {
       final List<ImportNameElement> importList = new ArrayList<>();
       switch (mode) {
         // If mode is unqualified then we need to consider all imports
