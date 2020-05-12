@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'com.asherbernardi'
-version '1.0.1'
+version '1.0.2'
 
 patchPluginXml {
     pluginDescription '''
@@ -23,8 +23,7 @@ patchPluginXml {
     <li> code completion
 </ul>'''
     changeNotes "Supports newest Intellij update version 2020.1, build 201.6668.121"
-    sinceBuild "193.6494.35"
-    untilBuild "201.6668.121"
+    sinceBuild "193"
 }
 
 sourceCompatibility = 1.8
