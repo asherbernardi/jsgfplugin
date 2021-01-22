@@ -3,13 +3,15 @@
 A plugin for Intellij IDEA to support the JSpeech Grammar Format.  
 Specifications were development based on this documentation: http://java.coe.psu.ac.th/Extension/JavaSpeech1.0/JSGF.pdf
 
+Plugin page: https://plugins.jetbrains.com/plugin/14099-jsgf
+
 ## Installation
 
 In Intellij go to "Settings > Plugins", click the "Marketplace" tab, and type "jsgf" into the search bar.
 The Jsgf plugin should be the first option.  
 Click install, then restart your IDE.
 
-_NOTE:_ You must have Intellij installed with version between 2019.3.3 and 2020.1, otherwise the plugin may not show up in Marketplace.
+_NOTE:_ You must have Intellij installed with version between 2019.3.3 and 2020.3, otherwise the plugin may not show up in Marketplace.
 
 ## What this plugin supports
 

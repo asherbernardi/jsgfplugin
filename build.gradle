@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'com.asherbernardi'
-version '1.0.2'
+version '1.0.4'
 
 patchPluginXml {
     pluginDescription '''
@@ -22,8 +22,9 @@ patchPluginXml {
     <li> view structure
     <li> code completion
 </ul>'''
-    changeNotes "Supports newest Intellij update version 2020.1, build 201.6668.121"
+    changeNotes "Supports newest IntelliJ version 2020.3"
     sinceBuild "193"
+    untilBuild "2020.*"
 }
 
 sourceCompatibility = 1.8
@@ -45,7 +46,7 @@ dependencies {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version '2020.1'
+    version '2020.3'
 }
 
 generateGrammarSource {
