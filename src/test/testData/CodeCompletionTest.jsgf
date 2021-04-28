@@ -5,7 +5,6 @@ import <other.notThis>;
 <rule4> = 4;
 <rule1> = 1;
 <rule2> = 2;
-// Should capture the import even if the import reference is broken
 <test> = <ru<caret>>;
 <rule3> = 3;
 <5Rule> = 5;

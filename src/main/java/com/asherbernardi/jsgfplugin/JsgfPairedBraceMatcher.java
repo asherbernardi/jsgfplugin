@@ -1,10 +1,10 @@
 package com.asherbernardi.jsgfplugin;
 
+import com.asherbernardi.jsgfplugin.psi.JsgfBnfTypes;
 import com.intellij.lang.BracePair;
 import com.intellij.lang.PairedBraceMatcher;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.tree.IElementType;
-import com.asherbernardi.jsgfplugin.psi.JsgfTypes;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,23 +14,23 @@ import org.jetbrains.annotations.Nullable;
  */
 public class JsgfPairedBraceMatcher implements PairedBraceMatcher {
   private final BracePair parens = new BracePair(
-      JsgfTypes.getTokenElementType(JsgfLexer.OPENPARAN),
-      JsgfTypes.getTokenElementType(JsgfLexer.CLOSEPARAN),
-      true);
+      JsgfBnfTypes.LPAREN,
+      JsgfBnfTypes.RPAREN,
+      false);
   private final BracePair bracks = new BracePair(
-      JsgfTypes.getTokenElementType(JsgfLexer.OPENBRACKET),
-      JsgfTypes.getTokenElementType(JsgfLexer.CLOSEBRACKET),
-      true);
+      JsgfBnfTypes.LBRACK,
+      JsgfBnfTypes.RBRACK,
+      false);
   // This class doesn't work with '<>' which is why we need the special TypeHandler
-  private final BracePair arrows = new BracePair(
-      JsgfTypes.getTokenElementType(JsgfLexer.OPENARROW),
-      JsgfTypes.getTokenElementType(JsgfLexer.CLOSEARROW),
-      false);
-  private final BracePair curlies = new BracePair(
-      JsgfTypes.getTokenElementType(JsgfLexer.OPENCURLY),
-      JsgfTypes.getTokenElementType(JsgfLexer.CLOSECURLY),
-      false);
-  private final BracePair[] pairs = new BracePair[]{parens, bracks, arrows, curlies};
+  private final BracePair angles = new BracePair(
+      JsgfBnfTypes.LANGLE,
+      JsgfBnfTypes.RANGLE,
+      true);
+  private final BracePair braces = new BracePair(
+      JsgfBnfTypes.LBRACE,
+      JsgfBnfTypes.RBRACE,
+      true);
+  private final BracePair[] pairs = new BracePair[]{parens, bracks, angles, braces};
 
   @NotNull
   @Override

@@ -2,31 +2,25 @@ package com.asherbernardi.jsgfplugin.psi;
 
 import com.asherbernardi.jsgfplugin.JsgfFileType;
 import com.asherbernardi.jsgfplugin.JsgfLanguage;
-import com.asherbernardi.jsgfplugin.psi.impl.GrammarNameElement;
 import com.intellij.extapi.psi.PsiFileBase;
 import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.psi.FileViewProvider;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiNamedElement;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.asherbernardi.jsgfplugin.JsgfUtil;
-import com.asherbernardi.jsgfplugin.psi.impl.ImportNameElement;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.antlr.intellij.adaptor.psi.ScopeNode;
-import org.antlr.intellij.adaptor.xpath.XPath;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * PSI file class for Jsgf files
+ * PSI file class for JSGF files
  * @author asherbernardi
  */
 public class JsgfFile extends PsiFileBase {
   private HashSet<JsgfFile> importRelationships;
-  private HashSet<ImportNameElement> imports;
+  private HashSet<JsgfRuleImportName> imports;
 
   public JsgfFile(@NotNull FileViewProvider viewProvider) {
     super(viewProvider, JsgfLanguage.INSTANCE);
@@ -42,32 +36,36 @@ public class JsgfFile extends PsiFileBase {
 
   @Override
   public String toString() {
-    return "Jsgf File";
+    return JsgfFileType.INSTANCE.getName();
   }
 
-  @Override
-  public ScopeNode getContext() {
+  @Nullable
+  public JsgfGrammarName getGrammarName() {
+    JsgfGrammarDeclaration grammarDeclaration = getGrammarDeclaration();
+    if (grammarDeclaration != null) {
+      return grammarDeclaration.getGrammarName();
+    }
+    if (true) {
+      int i = 1 + 1;
+    }
     return null;
   }
 
   @Nullable
-  public GrammarNameElement getGrammarName() {
-    Collection<? extends PsiElement> names = XPath
-        .findAll(JsgfLanguage.INSTANCE, this, "/getGrammar/initGram/grammarName");
-    if (names == null || names.isEmpty()) {
-      return null;
-    }
-    PsiElement name = names.toArray(new PsiElement[1])[0];
-    if (!(name instanceof GrammarNameElement))
-      return null;
-    return (GrammarNameElement) name;
+  public JsgfGrammarDeclaration getGrammarDeclaration() {
+    return PsiTreeUtil.getChildOfType(this, JsgfGrammarDeclaration.class);
   }
 
-  public Set<ImportNameElement> getImports() {
+  @Nullable
+  public JsgfHeader getHeader() {
+    return PsiTreeUtil.getChildOfType(this, JsgfHeader.class);
+  }
+
+  public Set<JsgfRuleImportName> getImports() {
     if (imports == null)
       makeRelationships();
-    HashSet<ImportNameElement> importNames = new HashSet<>(PsiTreeUtil
-        .findChildrenOfType(this, ImportNameElement.class));
+    HashSet<JsgfRuleImportName> importNames = new HashSet<>(PsiTreeUtil
+        .findChildrenOfType(this, JsgfRuleImportName.class));
     if (!importNames.equals(imports)) {
       makeRelationships();
     }
@@ -87,13 +85,13 @@ public class JsgfFile extends PsiFileBase {
   }
 
   private void makeRelationships() {
-    Collection<ImportNameElement> importNames = PsiTreeUtil
-        .findChildrenOfType(this, ImportNameElement.class);
+    Collection<JsgfRuleImportName> importNames = PsiTreeUtil
+        .findChildrenOfType(this, JsgfRuleImportName.class);
     importRelationships = new HashSet<>();
     imports = new HashSet<>();
     try {
-      for (ImportNameElement importName : importNames) {
-        List<JsgfFile> files = JsgfUtil.findFilesByPackage(getProject(), importName);
+      for (JsgfRuleImportName importName : importNames) {
+        List<JsgfFile> files = JsgfUtil.findFilesByPackage(importName);
         importRelationships.addAll(files);
         imports.add(importName);
       }

@@ -1,9 +1,9 @@
 package com.asherbernardi.jsgfplugin;
 
-import org.antlr.intellij.adaptor.lexer.ANTLRLexerAdaptor;
+import com.intellij.lexer.FlexAdapter;
 
-public class JsgfLexerAdapter extends ANTLRLexerAdaptor {
+public class JsgfLexerAdapter extends FlexAdapter {
   public JsgfLexerAdapter() {
-    super(JsgfLanguage.INSTANCE, new JsgfLexer(null));
+    super(new SimpleLexer(null));
   }
 }

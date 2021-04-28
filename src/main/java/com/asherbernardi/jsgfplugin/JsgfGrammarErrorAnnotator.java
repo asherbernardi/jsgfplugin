@@ -1,24 +1,26 @@
 package com.asherbernardi.jsgfplugin;
 
-import com.asherbernardi.jsgfplugin.JsgfLexer;
+import com.asherbernardi.jsgfplugin.JsgfSyntaxHighlighter.JsgfHighlightType;
 import com.asherbernardi.jsgfplugin.psi.JsgfFile;
-import com.asherbernardi.jsgfplugin.psi.JsgfTypes;
-import com.asherbernardi.jsgfplugin.psi.impl.*;
+import com.asherbernardi.jsgfplugin.psi.*;
 import com.asherbernardi.jsgfplugin.psi.reference.ImportNameReference;
+import com.asherbernardi.jsgfplugin.psi.reference.JsgfResolveResult;
+import com.asherbernardi.jsgfplugin.psi.reference.OtherFileNameReference;
 import com.asherbernardi.jsgfplugin.psi.reference.RuleReferenceReference;
-import com.intellij.extapi.psi.ASTDelegatePsiElement;
-import com.intellij.lang.annotation.Annotation;
+import com.intellij.lang.ASTNode;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
+import com.intellij.lang.annotation.HighlightSeverity;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.ResolveResult;
-import com.asherbernardi.jsgfplugin.psi.impl.ImportNameElement;
-import com.asherbernardi.jsgfplugin.psi.impl.RuleDeclarationNameElement;
-import com.asherbernardi.jsgfplugin.psi.impl.RuleNameElement;
+import com.asherbernardi.jsgfplugin.psi.JsgfRuleImportName;
+import com.asherbernardi.jsgfplugin.psi.JsgfRuleDeclarationName;
+import com.asherbernardi.jsgfplugin.psi.RuleName;
 import com.intellij.psi.util.PsiTreeUtil;
 import java.util.List;
-import javax.swing.GroupLayout.SequentialGroup;
-import org.antlr.intellij.adaptor.lexer.TokenIElementType;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -30,79 +32,160 @@ public class JsgfGrammarErrorAnnotator implements Annotator {
   public void annotate(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
     // Mark errors for whitespace before/after rule names. I was not able to get parser to do
     // that automatically... It will ignore whitespace between the angle brackets and the rulename
-    if (element instanceof RuleNameElement) {
-      if (!(element.getNode().getTreeNext().getElementType() instanceof TokenIElementType) ||
-          ((TokenIElementType) element.getNode().getTreeNext().getElementType()).getANTLRTokenType()
-            != JsgfLexer.CLOSEARROW) {
-        holder.createErrorAnnotation(element.getNode().getTreeNext().getPsi(),
-            "Rule name must be followed be a right angle brackets '>'");
+    if (element instanceof RuleName) {
+      if (element.getNode().getTreeNext().getElementType() != JsgfBnfTypes.RANGLE) {
+        holder.newAnnotation(HighlightSeverity.ERROR,
+            "Rule name must be followed be a right angle bracket '>'")
+            .range(element).create();
       }
-      if (!(element.getNode().getTreePrev().getElementType() instanceof TokenIElementType) ||
-          ((TokenIElementType) element.getNode().getTreePrev().getElementType()).getANTLRTokenType()
-              != JsgfLexer.OPENARROW) {
-        holder.createErrorAnnotation(element.getNode().getTreePrev().getPsi(),
-            "Rule name must be preceded by a left angle brackets '<'");
+      if (element.getNode().getTreePrev().getElementType() != JsgfBnfTypes.LANGLE) {
+        holder.newAnnotation(HighlightSeverity.ERROR,
+            "Rule name must be preceded by a left angle bracket '<'")
+            .range(element).create();
       }
     }
     // Mark rule declarations that have that have already been defined as an error
-    if (element instanceof RuleDeclarationNameElement) {
-      RuleDeclarationNameElement ruleName = (RuleDeclarationNameElement) element;
-      if ("NULL".equals(ruleName.getName()) || "VOID".equals(ruleName.getName()))
-        holder.createErrorAnnotation(ruleName, "Cannot redefine reserved rule " + ruleName.getName());
-      if (!JsgfUtil.isFirstDeclarationInFile((JsgfFile) element.getContainingFile(), ruleName))
-        holder.createErrorAnnotation(ruleName, "Rule <" + ruleName.getName() + "> already defined");
+    if (element instanceof JsgfRuleDeclarationName) {
+      JsgfRuleDeclarationName ruleName = (JsgfRuleDeclarationName) element;
+      if ("NULL".equals(ruleName.getRuleName()) || "VOID".equals(ruleName.getRuleName())) {
+        holder.newAnnotation(HighlightSeverity.ERROR,
+            "Cannot redefine reserved rule " + ruleName.getRuleName())
+            .range(ruleName)
+            .create();
+      }
+      if (!JsgfUtil.isFirstDeclarationInFile((JsgfFile) element.getContainingFile(), ruleName)) {
+        holder.newAnnotation(HighlightSeverity.ERROR,
+            "Rule <" + ruleName.getRuleName() + "> already defined")
+            .range(ruleName)
+            .create();
+      }
     }
     // Mark unresolved rule references
-    if (element instanceof RuleReferenceElement) {
-      RuleReferenceElement ruleRef = (RuleReferenceElement) element;
+    if (element instanceof JsgfRuleReferenceName) {
+      JsgfRuleReferenceName ruleRef = (JsgfRuleReferenceName) element;
       // reserved special rules
-      if ("NULL".equals(ruleRef.getName()) || "VOID".equals(ruleRef.getName()))
+      if ("NULL".equals(ruleRef.getRuleName()) || "VOID".equals(ruleRef.getRuleName()))
         return;
-      ResolveResult[] resolves = ((RuleReferenceReference) ruleRef.getReference()).multiResolve(false);
+      RuleReferenceReference ref = (RuleReferenceReference) ruleRef.getReference();
+      ResolveResult[] resolves = ref.multiResolve(false);
       if (resolves.length == 0) {
-        Annotation annotation = holder.createErrorAnnotation(element, "Cannot resolve reference to rule: "
-            + ruleRef.getName());
-        annotation.setTextAttributes(JsgfSyntaxHighlighter.BAD_REFERENCE);
-      }
-      else if (resolves.length > 1){
-        holder.createWarningAnnotation(element, "Rule has more than one declaration: "
-            + ruleRef.getName());
+        holder.newAnnotation(HighlightSeverity.ERROR,
+            "Cannot resolve reference to rule: "
+                + ruleRef.getRuleName())
+            .textAttributes(JsgfHighlightType.BAD_REFERENCE.getTextAttributesKey())
+            .range(element)
+            .create();
+      } else if (resolves.length > 1) {
+        holder.newAnnotation(HighlightSeverity.WARNING,
+            "Rule has more than one declaration: "
+                + ruleRef.getRuleName()).range(element).create();
+      } else if (!((JsgfResolveResult) resolves[0]).isLocal()
+          && !((RuleDeclarationName) resolves[0].getElement()).isPublicRule()) {
+        holder.newAnnotation(HighlightSeverity.ERROR,
+            "<" + ruleRef.getRuleName() + "> does not have public access in "
+                + resolves[0].getElement().getContainingFile().getName())
+            .textAttributes(JsgfHighlightType.BAD_REFERENCE.getTextAttributesKey())
+            .range(element).create();
       }
     }
-    if (element instanceof ImportNameElement) {
-      if (((ImportNameElement) element).isStarImport()) {
-        List<JsgfFile> files = JsgfUtil.findFilesByPackage(element.getProject(), ((ImportNameElement) element));
+    if (element instanceof JsgfRuleImportName) {
+      if (((JsgfRuleImportName) element).isStarImport()) {
+        List<JsgfFile> files = JsgfUtil.findFilesByPackage(((JsgfRuleImportName) element));
         if (files.isEmpty()) {
-          holder.createErrorAnnotation(element, "File not found for imported rule: "
-                  + ((ImportNameElement) element).getName());
+          holder.newAnnotation(HighlightSeverity.ERROR,
+              "File not found for imported rule: "
+                  + ((JsgfRuleImportName) element).getRuleName())
+              .range(element)
+              .create();
         }
       }
       else {
-        ResolveResult[] resolves = ((ImportNameReference) element.getReference())
-            .multiResolve(false);
-        if (resolves.length == 0) {
-          Annotation annotation = holder
-              .createErrorAnnotation(element, "Cannot resolve reference to imported rule: "
-                  + ((ImportNameElement) element).getName());
-          annotation.setTextAttributes(JsgfSyntaxHighlighter.BAD_REFERENCE);
-        } else if (resolves.length > 1) {
-          holder
-              .createWarningAnnotation(element, "Rule import refers to more than one declaration: "
-                  + ((ImportNameElement) element).getName());
+        OtherFileNameReference ref = (ImportNameReference) element.getReference();
+        if (ref != null) {
+          ResolveResult[] resolves = ref.multiResolve(false);
+          if (resolves.length == 0) {
+            holder.newAnnotation(HighlightSeverity.ERROR,
+                "Cannot resolve reference to imported rule: "
+                    + ((JsgfRuleImportName) element).getRuleName())
+                .textAttributes(JsgfHighlightType.BAD_REFERENCE.getTextAttributesKey()).range(element).create();
+          } else if (resolves.length > 1) {
+            holder.newAnnotation(HighlightSeverity.ERROR,
+                "Rule import refers to more than one declaration: "
+                    + ((JsgfRuleImportName) element).getRuleName())
+                .range(element)
+                .create();
+          } else if (!((JsgfResolveResult) resolves[0]).isLocal()
+              && !((RuleDeclarationName) resolves[0].getElement()).isPublicRule()) {
+            holder.newAnnotation(HighlightSeverity.ERROR,
+                "<" + ref.getQualifiedName() + "> does not have public access in "
+                    + resolves[0].getElement().getContainingFile().getName())
+                .textAttributes(JsgfHighlightType.BAD_REFERENCE.getTextAttributesKey())
+                .range(element).create();
+          }
         }
       }
     }
     // No viable alternative error
-    if (element instanceof AlternativesElement) {
-      SequenceElement[] sequences = ((AlternativesElement) element).getAlternatives();
-      for (SequenceElement alt : sequences) {
-        if (PsiTreeUtil.findChildrenOfAnyType(alt, RuleReferenceElement.class,
-            TerminalElement.class, StringElement.class, AlternativesElement.class).isEmpty()) {
-          holder.createErrorAnnotation(alt, "Empty alternative: " + alt.getText());
+    if (element instanceof JsgfAlternatives) {
+      List<JsgfSequence> sequences = ((JsgfAlternatives) element).getSequenceList();
+      for (JsgfSequence alt : sequences) {
+        if (PsiTreeUtil.findChildrenOfAnyType(alt, JsgfRuleReferenceName.class,
+            JsgfTerminal.class, JsgfString.class, JsgfAlternatives.class).isEmpty()) {
+          holder.newAnnotation(HighlightSeverity.ERROR,
+              "Empty alternative: " + alt.getText())
+              .range(alt)
+              .create();
         }
       }
-      if (!(((AlternativesElement) element).getOrSymbols().length == sequences.length - 1)) {
-        holder.createErrorAnnotation(element, "No viable alternative for input: " + element.getText());
+      if (!(((JsgfAlternatives) element).getOrSymbols().size() == sequences.size() - 1)) {
+        holder.newAnnotation(HighlightSeverity.ERROR,
+            "No viable alternative for input: " + element.getText())
+            .range(element).create();
+      }
+    }
+    // Hanging string
+    if (element.getNode().getElementType() == JsgfBnfTypes.QUOTE) {
+      ASTNode next = element.getNode().getTreeNext();
+      if (next != null &&
+          (
+              next.getElementType() == JsgfBnfTypes.STRING_NL
+              ||
+              (next.getElementType() == JsgfBnfTypes.STRING_TEXT
+                  && next.getTreeNext() != null
+                  && next.getTreeNext().getElementType() == JsgfBnfTypes.STRING_NL)
+          )
+      ) {
+        holder.newAnnotation(HighlightSeverity.ERROR,
+            "Illegal line end in quoted token")
+            .range(element).create();
+      }
+    }
+    if (element.getNode().getElementType() == JsgfBnfTypes.STRING_TEXT) {
+      ASTNode next = element.getNode().getTreeNext();
+      if (next.getElementType() == JsgfBnfTypes.STRING_NL) {
+        holder.newAnnotation(HighlightSeverity.ERROR,
+            "Illegal line end in quoted token")
+            .range(element).create();
+      }
+    }
+    // No grammar declaration
+    if (element instanceof JsgfFile) {
+      if (((JsgfFile) element).getGrammarDeclaration() == null) {
+        JsgfHeader header = ((JsgfFile) element).getHeader();
+        TextRange range = null;
+        if (header != null) {
+          range = header.getTextRange();
+        } else {
+          Matcher firstNonWS = Pattern.compile("\\S").matcher(element.getText());
+          if (firstNonWS.find()) {
+            range = new TextRange(firstNonWS.start(), firstNonWS.start() + 1);
+          }
+        }
+        if (range != null) {
+          holder.newAnnotation(HighlightSeverity.WARNING,
+              "No grammar declaration in file")
+              .range(range).create();
+        }
       }
     }
   }

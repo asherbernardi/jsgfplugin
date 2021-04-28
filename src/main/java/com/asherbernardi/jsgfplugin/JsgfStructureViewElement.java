@@ -1,7 +1,7 @@
 package com.asherbernardi.jsgfplugin;
 
 import com.asherbernardi.jsgfplugin.psi.JsgfFile;
-import com.asherbernardi.jsgfplugin.psi.impl.RuleDeclarationNameElement;
+import com.asherbernardi.jsgfplugin.psi.JsgfRuleDeclarationName;
 import com.intellij.ide.projectView.PresentationData;
 import com.intellij.ide.structureView.StructureViewTreeElement;
 import com.intellij.ide.util.treeView.smartTree.SortableTreeElement;
@@ -60,16 +60,17 @@ public class JsgfStructureViewElement implements StructureViewTreeElement, Sorta
     return presentation != null ? presentation : new PresentationData();
   }
 
+  @NotNull
   @Override
   public TreeElement[] getChildren() {
     if (myElement instanceof JsgfFile) {
-      Collection<RuleDeclarationNameElement> names = PsiTreeUtil.findChildrenOfType(myElement,
-          RuleDeclarationNameElement.class);
+      Collection<JsgfRuleDeclarationName> names = PsiTreeUtil.findChildrenOfType(myElement,
+          JsgfRuleDeclarationName.class);
       List<TreeElement> treeElements = new ArrayList<>(names.size());
-      for (RuleDeclarationNameElement name : names) {
+      for (JsgfRuleDeclarationName name : names) {
         treeElements.add(new JsgfStructureViewElement(name));
       }
-      return treeElements.toArray(new TreeElement[treeElements.size()]);
+      return treeElements.toArray(new TreeElement[0]);
     }
     return EMPTY_ARRAY;
   }

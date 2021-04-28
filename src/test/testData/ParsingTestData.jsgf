@@ -8,7 +8,7 @@ import <com.asherbernardi.anotherGrammar.anotherRule>;
 
 <rule1> = this | a rule;
 <&^%|oeunth> = ((1 2 [3 | 4] {tag}) | ((5) /*inner block*/ | 6) );
-<paren1> = (();
+<paren1> = [[];
 <paren2> = ());
 /**
  * @example here

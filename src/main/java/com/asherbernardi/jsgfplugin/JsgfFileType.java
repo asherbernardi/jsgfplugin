@@ -20,13 +20,13 @@ public class JsgfFileType extends LanguageFileType {
   @NotNull
   @Override
   public String getName() {
-    return "Jsgf file";
+    return "JSGF";
   }
 
   @NotNull
   @Override
   public String getDescription() {
-    return "Jsgf language file";
+    return "JSpeech Grammar Format language file";
   }
 
   @NotNull

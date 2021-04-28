@@ -1,0 +1,11 @@
+#JSGF V1.0;
+grammar CodeCompletionTest;
+import <other.*>;
+<rule4> = 4;
+<rule1> = 1;
+<rule2> = 2;
+<test> = <ano<caret>>;
+<rule3> = 3;
+<5Rule> = 5;
+<anotherLocal> = 6;
+<notThisOne> = no;

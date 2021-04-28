@@ -1,13 +1,12 @@
 package com.asherbernardi.jsgfplugin;
 
-import com.asherbernardi.jsgfplugin.psi.impl.RuleDeclarationSubtree;
+import com.asherbernardi.jsgfplugin.psi.JsgfRuleDefinition;
 import com.intellij.lang.cacheBuilder.WordsScanner;
 import com.intellij.lang.findUsages.FindUsagesProvider;
-import com.intellij.openapi.util.Condition;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.asherbernardi.jsgfplugin.psi.impl.RuleDeclarationNameElement;
-import com.asherbernardi.jsgfplugin.psi.impl.RuleNameElement;
+import com.asherbernardi.jsgfplugin.psi.JsgfRuleDeclarationName;
+import com.asherbernardi.jsgfplugin.psi.RuleName;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,7 +24,7 @@ public class JsgfFindUsagesProvider implements FindUsagesProvider {
 
   @Override
   public boolean canFindUsagesFor(@NotNull PsiElement psiElement) {
-    return (psiElement instanceof RuleDeclarationNameElement);
+    return (psiElement instanceof JsgfRuleDeclarationName);
   }
 
   @Nullable
@@ -37,7 +36,7 @@ public class JsgfFindUsagesProvider implements FindUsagesProvider {
   @NotNull
   @Override
   public String getType(@NotNull PsiElement element) {
-    if (element instanceof RuleNameElement)
+    if (element instanceof RuleName)
       return "jsgf rule";
     return "";
   }
@@ -45,7 +44,7 @@ public class JsgfFindUsagesProvider implements FindUsagesProvider {
   @NotNull
   @Override
   public String getDescriptiveName(@NotNull PsiElement element) {
-    if (element instanceof RuleNameElement)
+    if (element instanceof RuleName)
       return element.getText();
     return "";
   }
@@ -53,17 +52,16 @@ public class JsgfFindUsagesProvider implements FindUsagesProvider {
   @NotNull
   @Override
   public String getNodeText(@NotNull PsiElement element, boolean useFullName) {
-    if (element instanceof RuleNameElement) {
-      return PsiTreeUtil.findFirstParent(element, new Condition<PsiElement>() {
-        @Override
-        public boolean value(PsiElement psiElement) {
-          if (psiElement instanceof RuleDeclarationSubtree)
-            return true;
-          return false;
-        }
-      }).getText();
-    } else {
-      return "";
+    if (element instanceof RuleName) {
+      PsiElement parent = PsiTreeUtil.findFirstParent(element, psiElement -> {
+        if (psiElement instanceof JsgfRuleDefinition)
+          return true;
+        return false;
+      });
+      if (parent != null) {
+        return parent.getText();
+      }
     }
+    return "";
   }
 }

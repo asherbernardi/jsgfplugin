@@ -1,25 +1,27 @@
 package com.asherbernardi.jsgfplugin.psi.reference;
 
 import com.asherbernardi.jsgfplugin.JsgfUtil;
+import com.asherbernardi.jsgfplugin.psi.RuleDeclarationName;
 import com.intellij.openapi.util.TextRange;
-import com.intellij.psi.PsiElement;
-import com.asherbernardi.jsgfplugin.psi.impl.ImportNameElement;
+import com.asherbernardi.jsgfplugin.psi.JsgfRuleImportName;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
 public class ImportNameReference extends OtherFileNameReference {
 
-  public ImportNameReference(@NotNull ImportNameElement element, TextRange range) {
+  public ImportNameReference(@NotNull JsgfRuleImportName element, TextRange range) {
     super(element, range);
   }
 
+  @NotNull
   @Override
-  protected List<PsiElement> getRules() {
-    return JsgfUtil.findImportRules(myElement.getProject(), myElement);
+  protected List<RuleDeclarationName> getRules(boolean publicOnly) {
+    return JsgfUtil.findImportRules(myElement, publicOnly);
   }
 
+  @NotNull
   @Override
-  protected List<PsiElement> getRulesByPackage() {
-    return JsgfUtil.findImportRulesByPackage(myElement.getProject(), myElement);
+  protected List<RuleDeclarationName> getRulesByPackage(boolean publicOnly) {
+    return JsgfUtil.findImportRulesByPackage(myElement, publicOnly);
   }
 }

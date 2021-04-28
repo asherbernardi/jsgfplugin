@@ -9,34 +9,40 @@
   <depends>com.intellij.modules.lang</depends>
 
   <extensions defaultExtensionNs="com.intellij">
-    <fileType name="Jsgf file" implementationClass="com.asherbernardi.jsgfplugin.JsgfFileType"
-      fieldName="INSTANCE" language="Jsgf" extensions="jsgf;gram"/>
-    <lang.parserDefinition language="Jsgf"
+    <fileType name="JSGF" implementationClass="com.asherbernardi.jsgfplugin.JsgfFileType"
+      fieldName="INSTANCE" language="JSGF" extensions="jsgf;gram"/>
+    <lang.parserDefinition language="JSGF"
       implementationClass="com.asherbernardi.jsgfplugin.JsgfParserDefinition"/>
-    <lang.syntaxHighlighterFactory language="Jsgf"
+    <lang.syntaxHighlighterFactory language="JSGF"
       implementationClass="com.asherbernardi.jsgfplugin.JsgfSyntaxHighlighterFactory"/>
     <colorSettingsPage implementation="com.asherbernardi.jsgfplugin.JsgfColorSettingsPage"/>
-    <annotator language="Jsgf" implementationClass="com.asherbernardi.jsgfplugin.JsgfGrammarErrorAnnotator"/>
-    <annotator language="Jsgf" implementationClass="com.asherbernardi.jsgfplugin.JsgfAnnotator"/>
+    <annotator language="JSGF" implementationClass="com.asherbernardi.jsgfplugin.JsgfGrammarErrorAnnotator"/>
+    <annotator language="JSGF" implementationClass="com.asherbernardi.jsgfplugin.JsgfAnnotator"/>
     <lang.elementManipulator forClass="com.asherbernardi.jsgfplugin.psi.impl.RuleReferenceElement"
         implementationClass="com.asherbernardi.jsgfplugin.psi.manipulators.RuleReferenceManipulator"/>
     <lang.elementManipulator forClass="com.asherbernardi.jsgfplugin.psi.impl.ImportNameElement"
       implementationClass="com.asherbernardi.jsgfplugin.psi.manipulators.ImportNameManipulator"/>
-    <lang.refactoringSupport language="Jsgf" implementationClass="com.asherbernardi.jsgfplugin.JsgfRefactoringSupportProvider"/>
-    <lang.findUsagesProvider language="Jsgf"
+    <lang.refactoringSupport language="JSGF" implementationClass="com.asherbernardi.jsgfplugin.JsgfRefactoringSupportProvider"/>
+    <lang.findUsagesProvider language="JSGF"
       implementationClass="com.asherbernardi.jsgfplugin.JsgfFindUsagesProvider"/>
 <!--language should be included here, even though it says it is a bug. Otherwise, it doesn't work-->
-    <gotoSymbolContributor language="Jsgf"
+    <gotoSymbolContributor
       implementation="com.asherbernardi.jsgfplugin.JsgfChooseByNameContributor"/>
-    <lang.psiStructureViewFactory language="Jsgf"
+    <lang.psiStructureViewFactory language="JSGF"
       implementationClass="com.asherbernardi.jsgfplugin.JsgfStructureViewFactory"/>
-    <lang.commenter language="Jsgf" implementationClass="com.asherbernardi.jsgfplugin.JsgfCommenter"/>
-    <lang.braceMatcher language="Jsgf" implementationClass="com.asherbernardi.jsgfplugin.JsgfPairedBraceMatcher"/>
-    <typedHandler implementation="com.asherbernardi.jsgfplugin.JsgfArrowTypedHandler"/>
-    <backspaceHandlerDelegate implementation="com.asherbernardi.jsgfplugin.JsgfArrowBackspaceHandler"/>
-<!--    This quote handler wasn't working properly, so I gave up on it -->
-<!--    <quoteHandler fileType="Jsgf file" className="com.asherbernardi.jsgfplugin.JsgfQuoteHandler"/>-->
-    <lang.namesValidator language="Jsgf" implementationClass="com.asherbernardi.jsgfplugin.JsgfRuleNameIdentifierValidator"/>
+    <lang.commenter language="JSGF" implementationClass="com.asherbernardi.jsgfplugin.JsgfCommenter"/>
+    <lang.braceMatcher language="JSGF" implementationClass="com.asherbernardi.jsgfplugin.JsgfPairedBraceMatcher"/>
+    <typedHandler implementation="com.asherbernardi.jsgfplugin.JsgfTypedHandler"/>
+    <backspaceHandlerDelegate implementation="com.asherbernardi.jsgfplugin.JsgfBackspaceHandler"/>
+    <quoteHandler fileType="JSGF" className="com.asherbernardi.jsgfplugin.JsgfQuoteHandler"/>
+    <lang.namesValidator language="JSGF" implementationClass="com.asherbernardi.jsgfplugin.JsgfRuleNameIdentifierValidator"/>
+    <lang.formatter language="JSGF" implementationClass="com.asherbernardi.jsgfplugin.formatting.JsgfFormattingModelBuilder"/>
+    <stubElementTypeHolder class="com.asherbernardi.jsgfplugin.psi.stub.JsgfStubElementTypes"/>
+    <stubIndex implementation="com.asherbernardi.jsgfplugin.psi.stub.RuleStubIndex"/>
+    <stubIndex implementation="com.asherbernardi.jsgfplugin.psi.stub.GrammarStubIndex"/>
+    <stubIndex implementation="com.asherbernardi.jsgfplugin.psi.stub.ImportStubIndex"/>
+    <codeStyleSettingsProvider implementation="com.asherbernardi.jsgfplugin.codeStyle.JsgfCodeStyleSettingsProvider"/>
+    <langCodeStyleSettingsProvider implementation="com.asherbernardi.jsgfplugin.codeStyle.JsgfLanguageCodeStyleSettingsProvider"/>
   </extensions>
 
   <actions>

@@ -1,0 +1,8 @@
+#JSGF V1.0;
+grammar ReferenceTest;
+import <other.ReferenceTestOther.other1>;
+import <other.ReferenceTestOther.other2>;
+<rule1> = test;
+<rule2> = <rule1>;
+<rule3> = <rule3>;
+<rule4> = <o<caret>ther2>;

@@ -1,22 +1,29 @@
 package com.asherbernardi.jsgfplugin;
 
 import com.asherbernardi.jsgfplugin.psi.JsgfFile;
-import com.asherbernardi.jsgfplugin.psi.impl.GrammarNameElement;
-import com.intellij.openapi.fileTypes.FileNameMatcher;
-import com.intellij.openapi.fileTypes.impl.FileTypeManagerImpl;
+import com.asherbernardi.jsgfplugin.psi.JsgfGrammarName;
+import com.asherbernardi.jsgfplugin.psi.JsgfRuleDeclarationName;
+import com.asherbernardi.jsgfplugin.psi.JsgfRuleImportName;
+import com.asherbernardi.jsgfplugin.psi.RuleDeclarationName;
+import com.asherbernardi.jsgfplugin.psi.stub.GrammarStubIndex;
+import com.asherbernardi.jsgfplugin.psi.stub.RuleStubIndex;
+import com.intellij.lang.ASTNode;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.FileTypeIndex;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.asherbernardi.jsgfplugin.psi.impl.ImportNameElement;
-import com.asherbernardi.jsgfplugin.psi.impl.RuleNameElement;
+import com.asherbernardi.jsgfplugin.psi.RuleName;
+import com.intellij.psi.tree.IElementType;
+import com.intellij.psi.tree.TokenSet;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Helper methods for Jsgf PSI elements
@@ -24,76 +31,87 @@ import java.util.List;
  */
 public class JsgfUtil {
 
-  public static List<RuleNameElement> findRulesInFile(JsgfFile file, String key) {
-    return findRulesInFile(file, key, false);
+  @NotNull
+  public static List<RuleDeclarationName> findRulesInFile(JsgfFile file, String ruleName) {
+    // TODO change type of RuleName
+    return findRulesInFile(file, ruleName, false);
   }
 
-  public static List<RuleNameElement> findRulesInFile(JsgfFile file, String name, boolean publicOnly) {
-    List<RuleNameElement> result = retrieveRulesFromIndex(file, name, publicOnly);
-    // if the first pass through the index fails, try re-indexing and searching again
-    if (result.size() != 1) {
-      JsgfFileIndex.reindex(file);
-      result = retrieveRulesFromIndex(file, name, publicOnly);
+  @NotNull
+  public static List<RuleDeclarationName> findRulesInFile(JsgfFile file, String ruleName, boolean publicOnly) {
+    Collection<JsgfRuleDeclarationName> rules =
+        RuleStubIndex.getRulesByName(ruleName, file.getProject(), GlobalSearchScope.fileScope(file));
+    if (publicOnly) {
+      return rules.stream().filter(JsgfRuleDeclarationName::isPublicRule)
+          .collect(Collectors.toList());
     }
-    return result;
+    return new ArrayList<>(rules);
   }
+//
+//  private static List<RuleName> retrieveRulesFromIndex(JsgfFile file, String name, boolean publicOnly) {
+//    List<RuleName> result = new ArrayList<>();
+//    List<RuleName> rules;
+//    if (publicOnly)
+//      rules = JsgfFileIndex.getPublicRulesInFile((JsgfFile) file);
+//    else
+//      rules = JsgfFileIndex.getRulesInFile((JsgfFile) file);
+//    for (RuleName rule : rules) {
+//      if (name.equals(rule.getRuleName())) {
+//        result.add(rule);
+//      }
+//    }
+//    return result;
+//  }
 
-  private static List<RuleNameElement> retrieveRulesFromIndex(JsgfFile file, String name, boolean publicOnly) {
-    List<RuleNameElement> result = new ArrayList<>();
-    List<RuleNameElement> rules;
-    if (publicOnly)
-      rules = JsgfFileIndex.getPublicRulesInFile((JsgfFile) file);
-    else
-      rules = JsgfFileIndex.getRulesInFile((JsgfFile) file);
-    for (RuleNameElement rule : rules) {
-      if (name.equals(rule.getName())) {
-        result.add(rule);
-      }
-    }
-    return result;
-  }
+//  private static List<RuleName> retrieveRulesFromIndex(JsgfFile file, boolean publicOnly) {
+//    if (publicOnly)
+//      return JsgfFileIndex.getPublicRulesInFile((JsgfFile) file);
+//    else
+//      return JsgfFileIndex.getRulesInFile((JsgfFile) file);
+//  }
 
-  private static List<RuleNameElement> retrieveRulesFromIndex(JsgfFile file, boolean publicOnly) {
-    if (publicOnly)
-      return JsgfFileIndex.getPublicRulesInFile((JsgfFile) file);
-    else
-      return JsgfFileIndex.getRulesInFile((JsgfFile) file);
-  }
-
-  public static List<RuleNameElement> findRulesInFile(JsgfFile file) {
+  @NotNull
+  public static List<RuleDeclarationName> findRulesInFile(JsgfFile file) {
     return findRulesInFile(file, false);
   }
 
-  public static List<RuleNameElement> findRulesInFile(JsgfFile file, boolean publicOnly) {
-    List<RuleNameElement> result = retrieveRulesFromIndex(file, publicOnly);
-    return result;
+  @NotNull
+  public static List<RuleDeclarationName> findRulesInFile(JsgfFile file, boolean publicOnly) {
+    Collection<JsgfRuleDeclarationName> rules = RuleStubIndex.getRulesInFile(file);
+    if (publicOnly) {
+      return rules.stream().filter(JsgfRuleDeclarationName::isPublicRule)
+          .collect(Collectors.toList());
+    }
+    return new ArrayList<>(rules);
   }
 
-  public static boolean isFirstDeclarationInFile(JsgfFile file, RuleNameElement ruleName) {
-    List<RuleNameElement> result = retrieveRulesFromIndex(file, ruleName.getName(), false);
-    // if the first pass through the index fails, try re-indexing and searching again
-    if (result.isEmpty() || result.get(0) != ruleName) {
-      JsgfFileIndex.reindex(file);
-      result = retrieveRulesFromIndex(file, ruleName.getName(), false);
+  public static boolean isFirstDeclarationInFile(JsgfFile file, RuleName ruleName) {
+    List<RuleDeclarationName> rules = findRulesInFile(file, ruleName.getRuleName());
+    for (RuleName rule : rules) {
+      if (rule.getTextOffset() < ruleName.getTextOffset()) {
+        return false;
+      }
     }
-    return !result.isEmpty() && result.get(0) == ruleName;
+    return true;
   }
 
   /**
    * Finds rules in all project files that the match the import name.
    * If '*' is imported, it adds all public rules in the file
    *
-   * @param project the project within which to search
    * @param importName the importNameElement which we are trying to resolve
-   * @return a list of PsiFiles or RuleNameElements
+   * @param publicOnly Whether or not the private rules should be added in the result
+   * @return a list of PsiFiles or RuleNames
    */
-  public static List<PsiElement> findImportRules(Project project, ImportNameElement importName) {
-    List<PsiElement> result = new ArrayList<>();
-    for (JsgfFile file : findFilesByPackage(project, importName)) {
+  @NotNull
+  public static List<RuleDeclarationName> findImportRules(JsgfRuleImportName importName,
+      boolean publicOnly) {
+    List<RuleDeclarationName> result = new ArrayList<>();
+    for (JsgfFile file : findFilesByPackage(importName)) {
       if (importName.isStarImport())
-        result.addAll(findRulesInFile(file, true));
+        result.addAll(findRulesInFile(file, publicOnly));
       else
-        result.addAll(findRulesInFile(file, importName.getUnqualifiedName(), true));
+        result.addAll(findRulesInFile(file, importName.getUnqualifiedRuleName(), publicOnly));
     }
     return result;
   }
@@ -103,14 +121,16 @@ public class JsgfUtil {
    * It is different from findImportRules() in that it finds all the rules in each file,
    * not just rules which match.
    *
-   * @param project the project within which to search
    * @param importName the importNameElement which we are trying to resolve
-   * @return a list of PsiFiles or RuleNameElements
+   * @param publicOnly Whether or not the private rules should be added in the result
+   * @return a list of PsiFiles or RuleNames
    */
-  public static List<PsiElement> findImportRulesByPackage(Project project, ImportNameElement importName) {
-    List<PsiElement> result = new ArrayList<>();
-    for (JsgfFile file : findFilesByPackage(project, importName)) {
-      result.addAll(findRulesInFile(file, true));
+  @NotNull
+  public static List<RuleDeclarationName> findImportRulesByPackage(JsgfRuleImportName importName,
+      boolean publicOnly) {
+    List<RuleDeclarationName> result = new ArrayList<>();
+    for (JsgfFile file : findFilesByPackage(importName)) {
+      result.addAll(findRulesInFile(file, publicOnly));
     }
     return result;
   }
@@ -129,68 +149,79 @@ public class JsgfUtil {
    * It only find files that are in the same module as the file from which this is being called,
    * because the "find usages" functionality of Intellij also only searches within a module.
    *
-   * @param project the project within which to search
    * @param importName the importNameElement which we are trying to resolve
    * @return a list of JsgfFiles
    */
-  public static List<JsgfFile> findFilesByPackage(Project project, ImportNameElement importName) {
+  @NotNull
+  public static List<JsgfFile> findFilesByPackage(JsgfRuleImportName importName) {
+    List<JsgfFile> result = new ArrayList<>();
+    Project project = importName.getProject();
+    // Matching by grammar name
     String fullyQualifiedGrammarName = importName.getFullyQualifiedGrammarName();
-    List<FileNameMatcher> extensions = FileTypeManagerImpl.getInstance().getAssociations(JsgfFileType.INSTANCE);
+    Module module = ModuleUtil.findModuleForPsiElement(importName);
+    if (module == null) return result;
+    Collection<JsgfGrammarName> allMatchingGrammars = GrammarStubIndex
+        .getGrammarsByName(
+            fullyQualifiedGrammarName, project, GlobalSearchScope.moduleScope(module));
+    for (JsgfGrammarName grammarName : allMatchingGrammars) {
+      result.add((JsgfFile) grammarName.getContainingFile());
+    }
+    // Matching by file path
     String importDirectoryPath = importName.getPackageName().replace('.', '/');
     String importFileName = fullyQualifiedGrammarName.substring(fullyQualifiedGrammarName.lastIndexOf('.') + 1);
-    List<JsgfFile> result = new ArrayList<>();
     Collection<VirtualFile> virtualFiles =
         FileTypeIndex.getFiles(JsgfFileType.INSTANCE, GlobalSearchScope.allScope(project));
     for (VirtualFile virtualFile : virtualFiles) {
-      File file = new File(virtualFile.getCanonicalPath());
-      JsgfFile simpleFile = (JsgfFile) PsiManager.getInstance(project).findFile(virtualFile);
-      // We only search in our module, because find usages only searches within the module
-      if (ModuleUtil.findModuleForFile(simpleFile) !=
-          ModuleUtil.findModuleForFile(importName.getContainingFile().getOriginalFile()))
-        continue;
-      GrammarNameElement grammarName = simpleFile.getGrammarName();
-      // Match on the grammar name
-      if (grammarName != null && grammarName.getName().equals(fullyQualifiedGrammarName)) {
-        result.add(simpleFile);
-      }
-      // Match on the directory and file name
-      else if (!importDirectoryPath.isEmpty() && file.getParentFile().toPath().endsWith(importDirectoryPath)) {
-        for (FileNameMatcher matcher : extensions) {
-          String fileName = file.getName();
-          String noExtension = fileName.substring(0, (fileName.lastIndexOf('.')>-1?fileName.lastIndexOf('.'):fileName.length()));
-          if (noExtension.equals(importFileName) &&
-              matcher.acceptsCharSequence(fileName)) {
-            result.add(simpleFile);
-          }
+      String path = virtualFile.getCanonicalPath();
+      if (path == null) continue;;
+      File file = new File(path);
+      if (!importDirectoryPath.isEmpty() && file.getParentFile().toPath().endsWith(importDirectoryPath)) {
+        String fileName = file.getName();
+        int lastDot = fileName.lastIndexOf('.');
+        String noExtension = fileName.substring(0, lastDot > -1 ? lastDot : fileName.length());
+        if (noExtension.equals(importFileName)) {
+          JsgfFile simpleFile = (JsgfFile) PsiManager.getInstance(project).findFile(virtualFile);
+          result.add(simpleFile);
         }
       }
     }
     return result;
   }
 
-  public static List<RuleNameElement> findAllRules(Project project) {
-    List<RuleNameElement> result = new ArrayList<>();
-    Collection<VirtualFile> virtualFiles =
-        FileTypeIndex.getFiles(JsgfFileType.INSTANCE, GlobalSearchScope.allScope(project));
-    for (VirtualFile virtualFile : virtualFiles) {
-      JsgfFile simpleFile = (JsgfFile) PsiManager.getInstance(project).findFile(virtualFile);
-      result.addAll(findRulesInFile(simpleFile));
+  @NotNull
+  public static List<RuleName> findAllRules(Project project) {
+    List<RuleName> allRules = new ArrayList<>();
+    for (String ruleName : RuleStubIndex.INSTANCE.getAllKeys(project)) {
+      allRules.addAll(
+          RuleStubIndex.getRulesByName(ruleName, project, GlobalSearchScope.allScope(project)));
     }
-    return result;
+    return allRules;
   }
 
-  public static List<RuleNameElement> findAllRules(Project project, String name) {
-    List<RuleNameElement> result = new ArrayList<>();
-    Collection<VirtualFile> virtualFiles =
-        FileTypeIndex.getFiles(JsgfFileType.INSTANCE, GlobalSearchScope.allScope(project));
-    for (VirtualFile virtualFile : virtualFiles) {
-      JsgfFile simpleFile = (JsgfFile) PsiManager.getInstance(project).findFile(virtualFile);
-      for (RuleNameElement rule : findRulesInFile(simpleFile)) {
-        if (name.equals(rule.getName())) {
-          result.add(rule);
-        }
+  @NotNull
+  public static List<RuleName> findAllRules(Project project, String name) {
+    return new ArrayList<>(
+        RuleStubIndex.getRulesByName(name, project, GlobalSearchScope.allScope(project)));
+  }
+
+  @NotNull
+  public static List<ASTNode> findChildrenByType(ASTNode node, IElementType... types) {
+    return findChildrenByType(node, TokenSet.create(types));
+  }
+
+  @NotNull
+  public static List<ASTNode> findChildrenByType(ASTNode node, TokenSet types) {
+    List<ASTNode> children = new ArrayList<>();
+    ASTNode currentChild = node.findChildByType(types);
+    while (currentChild != null) {
+      children.add(currentChild);
+      ASTNode nextChild = currentChild.getTreeNext();
+      if (nextChild != null) {
+        currentChild = node.findChildByType(types, nextChild);
+      } else {
+        currentChild = null;
       }
     }
-    return result;
+    return children;
   }
 }

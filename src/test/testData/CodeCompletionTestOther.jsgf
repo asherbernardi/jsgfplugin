@@ -1,0 +1,5 @@
+#JSGF V1.0;
+grammar other;
+public <anotherRule> = 1;
+public <notThis> = 1;
+<privateRule> = 2;

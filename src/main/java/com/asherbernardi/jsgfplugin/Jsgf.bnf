@@ -1,0 +1,191 @@
+{
+  parserClass="com.asherbernardi.jsgfplugin.parser.JsgfBnfParser"
+
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+  psiClassPrefix="Jsgf"
+  psiImplClassSuffix="Impl"
+  psiPackage="com.asherbernardi.jsgfplugin.psi"
+  psiImplPackage="com.asherbernardi.jsgfplugin.psi.impl"
+  psiImplUtilClass="com.asherbernardi.jsgfplugin.psi.impl.JsgfPsiImplInjections"
+
+  elementTypeHolderClass="com.asherbernardi.jsgfplugin.psi.JsgfBnfTypes"
+  elementTypeClass="com.asherbernardi.jsgfplugin.psi.JsgfElementType"
+  tokenTypeClass="com.asherbernardi.jsgfplugin.psi.JsgfTokenType"
+
+  tokens = [
+    space = 'regexp:\s+'
+    JSGF_IDENT = '#JSGF'
+    VERSION = 'regexp:V\d+(\.\d+)*'
+    GRAMMAR = 'grammar'
+    IMPORT = 'import'
+    INCLUDE = 'include'
+    PUBLIC = 'public'
+    LPAREN = '('
+    RPAREN = ')'
+    LBRACE = '{'
+    RBRACE = '}'
+    LBRACK = '['
+    RBRACK = ']'
+    LANGLE = '<'
+    RANGLE = '>'
+    QUOTE = '"'
+    OR = '|'
+    PLUS = '+'
+    PERIOD = '.'
+    STAR = '*'
+    EQUALS = '='
+    SEMICOLON = ';'
+    SLASH = '/'
+    IDENTIFIER = 'regexp:[a-zA-Z1-9]+'
+    RULE_NAME_IDENTIFIER = 'regexp:[a-zA-Z1-9_]+'
+  ]
+}
+
+jsgfFile ::=
+  [header]
+  grammarDeclaration?
+  (importStatement)*
+  (ruleDefinition)*
+
+header ::= JSGF_IDENT VERSION IDENTIFIER* SEMICOLON {
+  pin = 1
+  recoverWhile = header_recover
+  mixin = "com.asherbernardi.jsgfplugin.psi.impl.HeaderMixin"
+}
+private header_recover ::= !(GRAMMAR|IMPORT|INCLUDE|PUBLIC|declaration)
+
+grammarDeclaration ::= grammarDeclaration_with_recover SEMICOLON {
+  mixin = "com.asherbernardi.jsgfplugin.psi.impl.GrammarDeclarationMixin"
+}
+private grammarDeclaration_with_recover ::= GRAMMAR grammarName {
+  pin = 1
+  recoverWhile = grammarDeclaration_recover
+  mixin = "com.asherbernardi.jsgfplugin.psi.impl.GrammarDeclarationMixin"
+}
+private grammarDeclaration_recover ::= !(SEMICOLON|IMPORT|INCLUDE|PUBLIC|declaration)
+
+grammarName ::= IDENTIFIER {
+  mixin = "com.asherbernardi.jsgfplugin.psi.impl.GrammarNameMixin"
+  implements = "com.asherbernardi.jsgfplugin.psi.GrammarName"
+  methods = [getName]
+  stubClass = "com.asherbernardi.jsgfplugin.psi.stub.GrammarNameStub"
+  elementTypeFactory = "com.asherbernardi.jsgfplugin.psi.stub.GrammarNameStubElementType.getInstance"
+}
+
+importStatement ::= importStatement_with_recover SEMICOLON? {
+  mixin = "com.asherbernardi.jsgfplugin.psi.impl.ImportStatementMixin"
+  methods = [isInclude getRuleImportName]
+}
+private importStatement_with_recover ::= (IMPORT|INCLUDE) ruleImport {
+  pin = 1
+  recoverWhile = importStatement_recover
+}
+private importStatement_recover ::= !(SEMICOLON | PUBLIC|declaration|INCLUDE|IMPORT)
+
+ruleImport ::= LANGLE ruleImportName RANGLE
+ruleImportName ::= RULE_NAME_IDENTIFIER (PERIOD RULE_NAME_IDENTIFIER)* [PERIOD STAR] {
+  implements = "com.asherbernardi.jsgfplugin.psi.ImportName"
+  mixin = "com.asherbernardi.jsgfplugin.psi.impl.RuleImportNameMixin"
+  methods = [isStarImport getUnqualifiedRuleName getFullyQualifiedGrammarName
+             getSimpleGrammarName getPackageName getReference getUseScope]
+  stubClass = "com.asherbernardi.jsgfplugin.psi.stub.ImportStub"
+  elementTypeFactory = "com.asherbernardi.jsgfplugin.psi.stub.ImportStubElementType.getInstance"
+}
+
+ruleDefinition ::= ruleDefinition_with_recover SEMICOLON {
+  mixin = "com.asherbernardi.jsgfplugin.psi.impl.RuleDefinitionMixin"
+  methods = [getRuleName isPublicRule]
+}
+private ruleDefinition_with_recover ::= [PUBLIC] ruleDeclaration EQUALS alternatives {
+  pin = 2
+  recoverWhile = ruleDefinition_recover
+}
+private ruleDefinition_recover ::= !(SEMICOLON)
+
+ruleDeclaration ::= LANGLE ruleDeclarationName RANGLE {
+  mixin = "com.asherbernardi.jsgfplugin.psi.impl.RuleDeclarationMixin"
+  pin = 1
+  recoverWhile = ruleDeclaration_recover
+}
+private ruleDeclaration_recover ::= !(EQUALS | SEMICOLON)
+ruleDeclarationName ::= RULE_NAME_IDENTIFIER {
+  mixin = "com.asherbernardi.jsgfplugin.psi.impl.RuleDeclarationNameMixin"
+  implements = ["com.asherbernardi.jsgfplugin.psi.RuleDeclarationName"]
+  methods = [getName setName isPublicRule getPresentation getElementIcon getNameIdentifier getUseScope]
+  stubClass = "com.asherbernardi.jsgfplugin.psi.stub.RuleDeclarationStub"
+  elementTypeFactory = "com.asherbernardi.jsgfplugin.psi.stub.RuleDeclarationStubElementType.getInstance"
+}
+
+ruleReference ::= LANGLE ruleReferenceName RANGLE {
+  mixin = "com.asherbernardi.jsgfplugin.psi.impl.RuleReferenceMixin"
+}
+ruleReferenceName ::= RULE_NAME_IDENTIFIER (PERIOD RULE_NAME_IDENTIFIER)* {
+  mixin = "com.asherbernardi.jsgfplugin.psi.impl.RuleReferenceNameMixin"
+  implements = "com.asherbernardi.jsgfplugin.psi.RuleName"
+  methods = [getReference getUseScope]
+}
+
+terminal ::= TERMINAL_IDENTIFIER | IDENTIFIER {
+  mixin = "com.asherbernardi.jsgfplugin.psi.impl.TerminalMixin"
+}
+
+string ::= string_with_recover (QUOTE | STRING_NL) {
+  mixin = "com.asherbernardi.jsgfplugin.psi.impl.StringMixin"
+  methods = [getStringText]
+}
+private string_with_recover ::= QUOTE [STRING_TEXT] {
+  pin = 1
+  recoverWhile = string_recover
+}
+// Recover until the lexer exits the STRING state
+private string_recover ::= !(QUOTE | STRING_NL)
+
+alternatives ::= unweighted_alternatives | weighted_alternatives {
+  mixin = "com.asherbernardi.jsgfplugin.psi.impl.AlternativesMixin"
+  methods = [getOrSymbols]
+  pin = 1
+  recoverWhile = alternatives_recover
+}
+private unweighted_alternatives ::= sequence (OR sequence)*
+private weighted_alternatives ::= WEIGHT sequence (OR WEIGHT sequence)+
+private alternatives_recover ::= !(SEMICOLON | RPAREN | RBRACK)
+
+sequence ::= sequence_with_recover+ {
+  mixin = "com.asherbernardi.jsgfplugin.psi.impl.SequenceMixin"
+  methods = [getWeight]
+}
+private sequence_with_recover ::= item {
+  pin = 1
+  recoverWhile = sequence_recover
+}
+private sequence_recover ::= !(SEMICOLON | item | OR | RPAREN | RBRACK)
+
+private item ::= (ruleReference | terminal | string | group) [STAR | PLUS] tag*
+
+group ::= paren_group | brack_group {
+  mixin = "com.asherbernardi.jsgfplugin.psi.impl.GroupMixin"
+  methods = [isOptionalGroup]
+}
+private paren_group ::= paren_group_with_recover RPAREN
+private paren_group_with_recover ::= LPAREN alternatives {
+  pin = 1
+  recoverWhile = paren_group_recover
+}
+private paren_group_recover ::= !(RPAREN | SEMICOLON)
+private brack_group ::= brack_group_with_recover RBRACK
+private brack_group_with_recover ::= LBRACK alternatives {
+  pin = 1
+  recoverWhile = brack_group_recover
+}
+private brack_group_recover ::= !(RBRACK | SEMICOLON)
+
+tag ::= tag_with_recover RBRACE {
+  mixin = "com.asherbernardi.jsgfplugin.psi.impl.TagMixin"
+}
+
+private tag_with_recover ::= LBRACE TAG_TOKEN* {
+  pin = 1
+  recoverWhile = tag_recover
+}
+private tag_recover ::= !(RBRACE)
