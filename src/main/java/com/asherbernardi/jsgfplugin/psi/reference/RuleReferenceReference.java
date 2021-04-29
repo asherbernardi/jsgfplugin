@@ -18,8 +18,11 @@ import com.asherbernardi.jsgfplugin.psi.RuleName;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -169,38 +172,86 @@ public class RuleReferenceReference extends PsiReferenceBase<JsgfRuleReferenceNa
     List<LookupElement> variants = new ArrayList<>();
     Set<String> variantsNames = new HashSet<>();
     long periodCount = myElement.getText().chars().filter(c -> c == '.').count();
+    final Map<String, Integer> unqualifiedNameCount = new HashMap<>();
     // if text has a "." then don't add the local rules
     if (periodCount == 0) {
-      for (final RuleName name : names) {
-        if (name.getRuleName() != null && name.getRuleName().length() > 0) {
-          variants.add(LookupElementBuilder
-              .create(name.getRuleName()).withIcon(JsgfIcons.FILE)
+      for (final RuleName ruleName : names) {
+        String name = ruleName.getRuleName();
+        if (name != null && name.length() > 0) {
+          variants.add(LookupElementBuilder.create(name)
+              .withIcon(JsgfIcons.FILE)
               .withTypeText("Rule")
           );
-          variantsNames.add(name.getRuleName());
+          variantsNames.add(name);
+          unqualifiedNameCount.put(name, unqualifiedNameCount.computeIfAbsent(name, n -> 0) + 1);
         }
       }
     }
     final Collection<JsgfRuleImportName> importNames = ImportStubIndex.getImportsInFile(file);
+    final Map<String, Integer> qualifiedNameCount = new HashMap<>();
+    final List<ImportNameLookupElementBuilder> builders = new ArrayList<>();
     for (JsgfRuleImportName importName : importNames) {
       for (RuleDeclarationName importedRule : JsgfUtil.findImportRules(importName, true)) {
         String name = importedRule.getRuleName();
-        // If there's a local rule with the same name or if the reference includes a period,
-        // we have to add the variant as qualified
-        if (variantsNames.contains(name) || periodCount == 1) {
-          name = importName.getSimpleGrammarName() + "." + importName.getUnqualifiedRuleName();
-          // If there's a qualified rule with the same name or if the reference includes multiple periods,
-          // we have to add the variant as fully qualified
-          if (variantsNames.contains(name) || periodCount > 1) {
-            name = importName.getFullyQualifiedGrammarName() + "." + importName.getUnqualifiedRuleName();
-          }
-        }
-        variants.add(LookupElementBuilder.create(name)
-            .withIcon(JsgfIcons.FILE)
-            .withTypeText("Imported rule from " + importName.getFullyQualifiedGrammarName()));
-        variantsNames.add(name);
+        String qualifiedName = importName.getSimpleGrammarName() + "." + importedRule.getRuleName();
+        String fullyQualifiedName = importName.getFullyQualifiedGrammarName() + "." + importedRule.getRuleName();
+        builders.add(new ImportNameLookupElementBuilder(name, qualifiedName, fullyQualifiedName, importName));
+        unqualifiedNameCount.put(name, unqualifiedNameCount.computeIfAbsent(name, n -> 0) + 1);
+        qualifiedNameCount.put(qualifiedName, qualifiedNameCount.computeIfAbsent(qualifiedName, n -> 0) + 1);
       }
     }
+    for (ImportNameLookupElementBuilder builder : builders) {
+      if (unqualifiedNameCount.get(builder.getUN()) > 1) {
+        builder.removeUN();
+      }
+      if (qualifiedNameCount.get(builder.getQN()) > 1) {
+        builder.removeQN();
+      }
+      variants.add(builder.getLookupElement());
+    }
     return variants.toArray();
+  }
+
+  private static class ImportNameLookupElementBuilder {
+    final LinkedList<String> names = new LinkedList<>();
+    final JsgfRuleImportName importName;
+
+    ImportNameLookupElementBuilder(String un, String qn, String fqn, JsgfRuleImportName importName) {
+      names.push(fqn);
+      names.push(qn);
+      names.push(un);
+      this.importName = importName;
+    }
+
+    String getUN() {
+      if (names.size() == 3)
+        return names.peek();
+      return null;
+    }
+
+    void removeUN() {
+      if (names.size() == 3)
+        names.pop();
+    }
+
+    String getQN() {
+      if (names.size() == 3)
+        return names.get(1);
+      if (names.size() == 2)
+        return names.peek();
+      return null;
+    }
+
+    void removeQN() {
+      if (names.size() == 2)
+        names.pop();
+    }
+
+    LookupElement getLookupElement() {
+      return LookupElementBuilder.create(names.pop())
+          .withLookupStrings(names)
+          .withIcon(JsgfIcons.FILE)
+          .withTypeText("Imported rule from " + importName.getFullyQualifiedGrammarName());
+    }
   }
 }
