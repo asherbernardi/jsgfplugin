@@ -19,7 +19,7 @@ import javax.annotation.Nonnull;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class LineGroupBlock implements ASTBlock {
+public class LineGroupBlock implements ASTGroupBlock {
 
   private final List<ASTNode> groupNodes;
   private final Indent indent;
@@ -34,13 +34,6 @@ public class LineGroupBlock implements ASTBlock {
     this.indent = indent;
     this.spacingBuilder = spacingBuilder;
     this.settings = settings;
-  }
-
-  @Override
-  public @NotNull TextRange getTextRange() {
-    ASTNode first = groupNodes.get(0);
-    ASTNode last = groupNodes.get(groupNodes.size() - 1);
-    return new TextRange(first.getStartOffset(), last.getTextRange().getEndOffset());
   }
 
   @Override
@@ -101,15 +94,12 @@ public class LineGroupBlock implements ASTBlock {
     return false;
   }
 
-  @Override
-  public ASTNode getNode() {
-    return getFirstNode();
-  }
-
+  @NotNull
   public ASTNode getFirstNode() {
     return groupNodes.get(0);
   }
 
+  @NotNull
   public ASTNode getLastNode() {
     return groupNodes.get(groupNodes.size() - 1);
   }

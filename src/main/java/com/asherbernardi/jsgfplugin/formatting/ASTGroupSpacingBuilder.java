@@ -21,9 +21,9 @@ public class ASTGroupSpacingBuilder extends SpacingBuilder {
   @Override
   public @Nullable Spacing getSpacing(@Nullable Block parent, @Nullable Block child1,
       @Nullable Block child2) {
-    if (parent instanceof ASTBlock && child1 instanceof LineGroupBlock && child2 instanceof ASTNode) {
+    if (parent instanceof ASTBlock && child1 instanceof ASTGroupBlock && child2 instanceof ASTNode) {
       return getSpacing(parent, ASTBlock.getElementType(parent),
-          ((LineGroupBlock) child1).getLastNode().getElementType(),
+          ((ASTGroupBlock) child1).getLastNode().getElementType(),
           ASTBlock.getElementType(child2));
     }
     return super.getSpacing(parent, child1, child2);

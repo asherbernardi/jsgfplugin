@@ -170,23 +170,24 @@ public class RuleReferenceReference extends PsiReferenceBase<JsgfRuleReferenceNa
     JsgfFile file = (JsgfFile) myElement.getContainingFile().getOriginalFile();
     List<RuleDeclarationName> names = JsgfUtil.findRulesInFile(file);
     List<LookupElement> variants = new ArrayList<>();
-    Set<String> variantsNames = new HashSet<>();
-    long periodCount = myElement.getText().chars().filter(c -> c == '.').count();
     final Map<String, Integer> unqualifiedNameCount = new HashMap<>();
     // if text has a "." then don't add the local rules
-    if (periodCount == 0) {
-      for (final RuleName ruleName : names) {
-        String name = ruleName.getRuleName();
-        if (name != null && name.length() > 0) {
-          variants.add(LookupElementBuilder.create(name)
-              .withIcon(JsgfIcons.FILE)
-              .withTypeText("Rule")
-          );
-          variantsNames.add(name);
-          unqualifiedNameCount.put(name, unqualifiedNameCount.computeIfAbsent(name, n -> 0) + 1);
-        }
+    for (final RuleName ruleName : names) {
+      String name = ruleName.getRuleName();
+      if (name != null && name.length() > 0) {
+        variants.add(LookupElementBuilder.create(name)
+            .withIcon(JsgfIcons.FILE)
+            .withTypeText("Rule")
+        );
+        unqualifiedNameCount.put(name, unqualifiedNameCount.computeIfAbsent(name, n -> 0) + 1);
       }
     }
+    // All imports will be added as variants with lookup strings equal to the unqualified,
+    // qualified, and fully qualified rule names for those imports, with precedence given to
+    // the unqualified names. If an imported rules unqualified name is shared with a local rule
+    // or another imported rule, then we remove that as an import string and given precedence
+    // to the qualified name. If still there's an overlap between qualified names, the qualified
+    // name is removed and precedence given to the fully qualified rule name.
     final Collection<JsgfRuleImportName> importNames = ImportStubIndex.getImportsInFile(file);
     final Map<String, Integer> qualifiedNameCount = new HashMap<>();
     final List<ImportNameLookupElementBuilder> builders = new ArrayList<>();
