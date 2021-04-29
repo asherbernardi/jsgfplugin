@@ -8,7 +8,6 @@ import com.intellij.lang.ASTNode;
 import com.intellij.psi.TokenType;
 import com.asherbernardi.jsgfplugin.psi.JsgfBnfTypes;
 import com.intellij.psi.codeStyle.CodeStyleSettings;
-import com.intellij.psi.formatter.common.AbstractBlock;
 import com.intellij.psi.tree.TokenSet;
 import java.util.ArrayList;
 import java.util.List;

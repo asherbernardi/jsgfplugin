@@ -1,7 +1,6 @@
 package com.asherbernardi.jsgfplugin.psi.impl;
 
 import com.asherbernardi.jsgfplugin.psi.JsgfRuleImport;
-import com.asherbernardi.jsgfplugin.psi.JsgfRuleImportName;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.intellij.lang.ASTNode;
 import com.asherbernardi.jsgfplugin.psi.JsgfImportStatement;

@@ -53,7 +53,7 @@ public class GrammarNameStubElementType extends IStubElementType<GrammarNameStub
     sink.occurrence(JsgfStubElementTypes.GRAMMAR_INDEX_KEY, stub.getName());
   }
 
-  public static GrammarNameStubElementType getInstance(String debugName) {
+  public static GrammarNameStubElementType getInstance() {
     return JsgfStubElementTypes.GRAMMAR_NAME_STUB_TYPE;
   }
 }

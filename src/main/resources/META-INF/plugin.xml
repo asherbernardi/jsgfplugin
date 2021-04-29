@@ -18,9 +18,9 @@
     <colorSettingsPage implementation="com.asherbernardi.jsgfplugin.JsgfColorSettingsPage"/>
     <annotator language="JSGF" implementationClass="com.asherbernardi.jsgfplugin.JsgfGrammarErrorAnnotator"/>
     <annotator language="JSGF" implementationClass="com.asherbernardi.jsgfplugin.JsgfAnnotator"/>
-    <lang.elementManipulator forClass="com.asherbernardi.jsgfplugin.psi.impl.RuleReferenceElement"
+    <lang.elementManipulator forClass="com.asherbernardi.jsgfplugin.psi.JsgfRuleReferenceName"
         implementationClass="com.asherbernardi.jsgfplugin.psi.manipulators.RuleReferenceManipulator"/>
-    <lang.elementManipulator forClass="com.asherbernardi.jsgfplugin.psi.impl.ImportNameElement"
+    <lang.elementManipulator forClass="com.asherbernardi.jsgfplugin.psi.JsgfRuleImportName"
       implementationClass="com.asherbernardi.jsgfplugin.psi.manipulators.ImportNameManipulator"/>
     <lang.refactoringSupport language="JSGF" implementationClass="com.asherbernardi.jsgfplugin.JsgfRefactoringSupportProvider"/>
     <lang.findUsagesProvider language="JSGF"

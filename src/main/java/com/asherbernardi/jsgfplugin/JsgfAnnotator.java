@@ -2,7 +2,6 @@ package com.asherbernardi.jsgfplugin;
 
 import com.asherbernardi.jsgfplugin.JsgfSyntaxHighlighter.JsgfHighlightType;
 import com.asherbernardi.jsgfplugin.psi.JsgfTag;
-import com.asherbernardi.jsgfplugin.psi.JsgfTerminal;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.annotation.HighlightSeverity;

@@ -53,11 +53,7 @@ public class JsgfFindUsagesProvider implements FindUsagesProvider {
   @Override
   public String getNodeText(@NotNull PsiElement element, boolean useFullName) {
     if (element instanceof RuleName) {
-      PsiElement parent = PsiTreeUtil.findFirstParent(element, psiElement -> {
-        if (psiElement instanceof JsgfRuleDefinition)
-          return true;
-        return false;
-      });
+      PsiElement parent = PsiTreeUtil.findFirstParent(element, parentEl -> parentEl instanceof JsgfRuleDefinition);
       if (parent != null) {
         return parent.getText();
       }

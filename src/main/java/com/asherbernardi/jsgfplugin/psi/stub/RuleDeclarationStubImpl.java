@@ -7,8 +7,8 @@ import org.jetbrains.annotations.Nullable;
 
 public class RuleDeclarationStubImpl extends StubBase<JsgfRuleDeclarationName> implements RuleDeclarationStub {
 
-  private String name;
-  private boolean isPublic;
+  private final String name;
+  private final boolean isPublic;
 
   protected RuleDeclarationStubImpl(@Nullable StubElement parent, String name, boolean isPublic) {
     super(parent, JsgfStubElementTypes.RULE_DECLARATION_STUB_TYPE);

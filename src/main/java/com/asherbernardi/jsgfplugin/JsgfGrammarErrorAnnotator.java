@@ -1,7 +1,6 @@
 package com.asherbernardi.jsgfplugin;
 
 import com.asherbernardi.jsgfplugin.JsgfSyntaxHighlighter.JsgfHighlightType;
-import com.asherbernardi.jsgfplugin.psi.JsgfFile;
 import com.asherbernardi.jsgfplugin.psi.*;
 import com.asherbernardi.jsgfplugin.psi.reference.ImportNameReference;
 import com.asherbernardi.jsgfplugin.psi.reference.JsgfResolveResult;
@@ -14,9 +13,6 @@ import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.ResolveResult;
-import com.asherbernardi.jsgfplugin.psi.JsgfRuleImportName;
-import com.asherbernardi.jsgfplugin.psi.JsgfRuleDeclarationName;
-import com.asherbernardi.jsgfplugin.psi.RuleName;
 import com.intellij.psi.util.PsiTreeUtil;
 import java.util.List;
 import java.util.regex.Matcher;

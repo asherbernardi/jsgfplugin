@@ -1,6 +1,5 @@
 package com.asherbernardi.jsgfplugin.formatting;
 
-import com.intellij.formatting.Alignment;
 import com.intellij.formatting.Block;
 import com.intellij.formatting.Indent;
 import com.intellij.lang.ASTNode;

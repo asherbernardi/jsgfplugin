@@ -20,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
  * @author asherbernardi
  */
 public class JsgfStructureViewElement implements StructureViewTreeElement, SortableTreeElement {
-  private NavigatablePsiElement myElement;
+  private final NavigatablePsiElement myElement;
 
   public JsgfStructureViewElement(NavigatablePsiElement element) {
     this.myElement = element;

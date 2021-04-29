@@ -7,7 +7,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class GrammarNameStubImpl extends StubBase<JsgfGrammarName> implements GrammarNameStub {
 
-  private String name;
+  private final String name;
 
   protected GrammarNameStubImpl(@Nullable StubElement parent, String name) {
     super(parent, JsgfStubElementTypes.GRAMMAR_NAME_STUB_TYPE);

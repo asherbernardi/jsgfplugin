@@ -8,7 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class ImportStubImpl extends StubBase<JsgfRuleImportName> implements ImportStub {
 
-  private String fullyQualifiedRuleName;
+  private final String fullyQualifiedRuleName;
 
   protected ImportStubImpl(@Nullable StubElement parent, String fullyQualifiedRuleName) {
     super(parent, JsgfStubElementTypes.IMPORT_STUB_TYPE);

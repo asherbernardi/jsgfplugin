@@ -1,11 +1,11 @@
 package com.asherbernardi.jsgfplugin.psi;
 
+import com.asherbernardi.jsgfplugin.JsgfElementFactory;
 import com.intellij.navigation.ItemPresentation;
 import com.intellij.psi.NavigatablePsiElement;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.SearchScope;
-import com.intellij.util.IncorrectOperationException;
 import com.asherbernardi.jsgfplugin.JsgfIcons;
 import javax.swing.Icon;
 import org.jetbrains.annotations.NotNull;
@@ -16,19 +16,9 @@ public interface RuleName extends PsiElement, NavigatablePsiElement {
     return getText();
   }
 
-  default PsiElement setRuleName(@NotNull String name) throws IncorrectOperationException {
-    //TODO
-//    int ttype = JsgfBnfTypes.RULE_NAME_IDENTIFIER;
-//    if (this instanceof ImportNameElement &&((ImportNameElement) this).isStarImport())
-//        throw new IncorrectOperationException("Cannot rename an import of all rules in a grammar");
-//    PsiElement parsed = Trees.createLeafFromText(getProject(), JsgfLanguage.INSTANCE,
-//        getContext(), '<' + name + '>', JsgfTypes.getTokenElementType(ttype));
-//    ASTNode newNameNode = parsed.getNextSibling().getNode();
-//    if (newNameNode != null) {
-//      // Only replace if the text was parsed properly
-//      if (name.equals(newNameNode.getText()))
-//        getNode().replaceAllChildrenToChildrenOf(newNameNode);
-//    }
+  default PsiElement setRuleName(@NotNull String newName) {
+    RuleName newRuleName = JsgfElementFactory.createRule(getProject(), newName);
+    getNode().replaceAllChildrenToChildrenOf(newRuleName.getNode());
     return this;
   }
 

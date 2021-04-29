@@ -1,14 +1,7 @@
 package com.asherbernardi.jsgfplugin.psi;
 
-import com.asherbernardi.jsgfplugin.JsgfLanguage;
-import com.asherbernardi.jsgfplugin.JsgfLexer;
-import com.asherbernardi.jsgfplugin.JsgfParser;
-import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.tree.TokenSet;
-import java.util.Arrays;
-import java.util.List;
 import java.util.regex.Pattern;
-import org.intellij.lang.annotations.MagicConstant;
 
 /**
  * Some static types which can be easily referenced.

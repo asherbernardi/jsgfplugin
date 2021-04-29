@@ -47,28 +47,6 @@ public class JsgfUtil {
     }
     return new ArrayList<>(rules);
   }
-//
-//  private static List<RuleName> retrieveRulesFromIndex(JsgfFile file, String name, boolean publicOnly) {
-//    List<RuleName> result = new ArrayList<>();
-//    List<RuleName> rules;
-//    if (publicOnly)
-//      rules = JsgfFileIndex.getPublicRulesInFile((JsgfFile) file);
-//    else
-//      rules = JsgfFileIndex.getRulesInFile((JsgfFile) file);
-//    for (RuleName rule : rules) {
-//      if (name.equals(rule.getRuleName())) {
-//        result.add(rule);
-//      }
-//    }
-//    return result;
-//  }
-
-//  private static List<RuleName> retrieveRulesFromIndex(JsgfFile file, boolean publicOnly) {
-//    if (publicOnly)
-//      return JsgfFileIndex.getPublicRulesInFile((JsgfFile) file);
-//    else
-//      return JsgfFileIndex.getRulesInFile((JsgfFile) file);
-//  }
 
   @NotNull
   public static List<RuleDeclarationName> findRulesInFile(JsgfFile file) {
@@ -173,7 +151,7 @@ public class JsgfUtil {
         FileTypeIndex.getFiles(JsgfFileType.INSTANCE, GlobalSearchScope.allScope(project));
     for (VirtualFile virtualFile : virtualFiles) {
       String path = virtualFile.getCanonicalPath();
-      if (path == null) continue;;
+      if (path == null) continue;
       File file = new File(path);
       if (!importDirectoryPath.isEmpty() && file.getParentFile().toPath().endsWith(importDirectoryPath)) {
         String fileName = file.getName();

@@ -24,17 +24,6 @@ public abstract class OtherFileNameReference extends PsiReferenceBase<JsgfRuleIm
   private final String unqualifiedName;
   private final String qualifiedName;
   private final String packageName;
-//  /**
-//   * Keeps track of the resolved elements, so that we don't go looking throughout the project
-//   * for grammars everytime it resolves (which destroys performance). The boolean refers to
-//   * <code>incompleteCode</code> from <code>multiResolve()</code>
-//   */
-//  private HashMap<Boolean, List<ResolveResult>> cachedResolve = new HashMap<>();
-//  /**
-//   * Keeps track of the text of the resolved elements at the time they were resolved. This way,
-//   * if you change an element in another file, the old cache will not resolve to that element.
-//   */
-//  private HashMap<ResolveResult, String> cachedResolveNames = new HashMap<>();
 
   public OtherFileNameReference(JsgfRuleImportName element, TextRange range) {
     super(element, range);
