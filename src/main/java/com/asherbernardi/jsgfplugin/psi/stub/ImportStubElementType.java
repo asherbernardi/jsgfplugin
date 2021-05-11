@@ -53,7 +53,8 @@ public class ImportStubElementType extends IStubElementType<ImportStub, JsgfRule
     sink.occurrence(JsgfStubElementTypes.IMPORT_INDEX_KEY, stub.getFullyQualifiedRuleName());
   }
 
-  public static ImportStubElementType getInstance() {
+  @SuppressWarnings("unused")
+  public static ImportStubElementType getInstance(String debugName) {
     return JsgfStubElementTypes.IMPORT_STUB_TYPE;
   }
 }

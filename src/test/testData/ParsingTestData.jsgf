@@ -1,20 +1,29 @@
 #JSGF V1.0 ASCII en_US;
+&
 // Testing comment
 grammar testParsing;
 /* Block
    test */
 import <com.asherbernardi.anotherGram.*>;
+&
 import <com.asherbernardi.anotherGrammar.anotherRule>;
+&
 
 <rule1> = this | a rule;
-<&^%|oeunth> = ((1 2 [3 | 4] {tag}) | ((5) /*inner block*/ | 6) );
-<paren1> = [[];
+&
+<&^%|oeunth> =
+((1 2 [3 | 4] {tag}) "bad string
+  | ((5) /*inner block*/ | 6)
+);
+<paren1> = (();
 <paren2> = ());
+<brack1> = [[test];
 /**
  * @example here
  * @author tag
  */
 <backToNormal> = /3/ light | /4/ weights | /5/ heavy;
+<end> = ([?|.|!] END);
 <> = empty (alternative | );
 public <publicRule> = <rule1>;
 &

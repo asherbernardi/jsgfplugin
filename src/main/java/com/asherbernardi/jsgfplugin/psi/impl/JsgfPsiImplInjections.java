@@ -1,6 +1,7 @@
 package com.asherbernardi.jsgfplugin.psi.impl;
 
 import com.asherbernardi.jsgfplugin.psi.reference.ImportNameReference;
+import com.asherbernardi.jsgfplugin.psi.reference.OtherFileNameReference;
 import com.intellij.lang.ASTNode;
 import com.intellij.navigation.ItemPresentation;
 import com.intellij.openapi.util.TextRange;
@@ -97,7 +98,7 @@ public interface JsgfPsiImplInjections {
   }
 
   @NotNull
-  static PsiReference getReference(JsgfRuleImportName importName) {
+  static OtherFileNameReference getReference(JsgfRuleImportName importName) {
     TextRange range = new TextRange(0, importName.getRuleName().length());
     return new ImportNameReference(importName, range);
   }
@@ -113,7 +114,7 @@ public interface JsgfPsiImplInjections {
    */
 
   @NotNull
-  static PsiReference getReference(JsgfRuleReferenceName ruleReferenceName) {
+  static RuleReferenceReference getReference(JsgfRuleReferenceName ruleReferenceName) {
     TextRange range = new TextRange(0, ruleReferenceName.getRuleName().length());
     return new RuleReferenceReference(ruleReferenceName, range);
   }

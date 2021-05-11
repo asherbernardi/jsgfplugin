@@ -55,7 +55,8 @@ public class RuleDeclarationStubElementType extends IStubElementType<RuleDeclara
     sink.occurrence(JsgfStubElementTypes.RULE_INDEX_KEY, stub.getName());
   }
 
-  public static RuleDeclarationStubElementType getInstance() {
+  @SuppressWarnings("unused")
+  public static RuleDeclarationStubElementType getInstance(String debugName) {
     return JsgfStubElementTypes.RULE_DECLARATION_STUB_TYPE;
   }
 }

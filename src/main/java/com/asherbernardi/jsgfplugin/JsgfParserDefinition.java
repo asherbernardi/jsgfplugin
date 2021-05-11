@@ -51,16 +51,19 @@ public class JsgfParserDefinition implements ParserDefinition {
     return new JsgfBnfParser();
   }
 
+  @NotNull
   @Override
   public IFileElementType getFileNodeType() {
     return JsgfStubElementTypes.FILE_ELEMENT_TYPE;
   }
 
+  @NotNull
   @Override
-  public PsiFile createFile(FileViewProvider viewProvider) {
+  public PsiFile createFile(@NotNull FileViewProvider viewProvider) {
     return new JsgfFile(viewProvider);
   }
 
+  @NotNull
   @Override
   public SpaceRequirements spaceExistenceTypeBetweenTokens(ASTNode left, ASTNode right) {
     return SpaceRequirements.MUST_NOT;

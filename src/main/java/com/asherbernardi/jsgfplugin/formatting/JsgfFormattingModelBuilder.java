@@ -121,6 +121,6 @@ public class JsgfFormattingModelBuilder implements FormattingModelBuilder {
     }
     return FormattingModelProvider.
         createFormattingModelForPsiFile(formattingContext.getContainingFile(),
-            block, formattingContext.getCodeStyleSettings());
+            block, settings);
   }
 }

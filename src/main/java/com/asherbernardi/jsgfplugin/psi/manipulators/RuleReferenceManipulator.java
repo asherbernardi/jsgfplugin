@@ -1,5 +1,6 @@
 package com.asherbernardi.jsgfplugin.psi.manipulators;
 
+import com.asherbernardi.jsgfplugin.psi.impl.JsgfPsiImplInjections;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.AbstractElementManipulator;
 import com.intellij.util.IncorrectOperationException;
@@ -13,6 +14,8 @@ public class RuleReferenceManipulator extends AbstractElementManipulator<JsgfRul
   @Override
   public JsgfRuleReferenceName handleContentChange(@NotNull JsgfRuleReferenceName element,
       @NotNull TextRange range, String newContent) throws IncorrectOperationException {
-    return (JsgfRuleReferenceName) element.setRuleName(newContent);
+    String fqgn = JsgfPsiImplInjections.fullyQualifiedGrammarNameFromFQRN(element.getRuleName());
+    String newQualifiedName = (fqgn.isEmpty() ? "" : fqgn + "." + newContent) + newContent;
+    return (JsgfRuleReferenceName) element.setRuleName(newQualifiedName);
   }
 }

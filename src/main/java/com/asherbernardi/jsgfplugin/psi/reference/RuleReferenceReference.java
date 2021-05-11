@@ -1,11 +1,13 @@
 package com.asherbernardi.jsgfplugin.psi.reference;
 
 import com.asherbernardi.jsgfplugin.JsgfIcons;
+import com.asherbernardi.jsgfplugin.psi.JsgfBnfTypes;
 import com.asherbernardi.jsgfplugin.psi.JsgfFile;
 import com.asherbernardi.jsgfplugin.psi.JsgfRuleImportName;
 import com.asherbernardi.jsgfplugin.psi.JsgfRuleReferenceName;
 import com.asherbernardi.jsgfplugin.psi.RuleDeclarationName;
 import com.asherbernardi.jsgfplugin.psi.stub.ImportStubIndex;
+import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.util.TextRange;
@@ -15,7 +17,9 @@ import com.intellij.psi.PsiReferenceBase;
 import com.intellij.psi.ResolveResult;
 import com.asherbernardi.jsgfplugin.JsgfUtil;
 import com.asherbernardi.jsgfplugin.psi.RuleName;
+import com.intellij.psi.util.PsiUtilCore;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -64,6 +68,15 @@ public class RuleReferenceReference extends PsiReferenceBase<JsgfRuleReferenceNa
     UNQUALIFIED, QUALIFIED, FULLY_QUALIFIED
   }
 
+  public static final InsertHandler<LookupElement> RULE_REFERENCE_INSERT_HANDLER = (context, lookupElement) -> {
+    int offset = context.getTailOffset();
+    PsiElement element = PsiUtilCore.getElementAtOffset(context.getFile().getOriginalFile(), offset);
+    if (element.getNode().getElementType() != JsgfBnfTypes.RANGLE) {
+      context.getEditor().getDocument().insertString(offset, ">");
+    }
+    context.getEditor().getCaretModel().moveToOffset(offset + 1);
+  };
+
   public RuleReferenceReference(@NotNull JsgfRuleReferenceName element, TextRange range) {
     super(element, range);
     String name = element.getRuleName();
@@ -95,13 +108,13 @@ public class RuleReferenceReference extends PsiReferenceBase<JsgfRuleReferenceNa
 
   @NotNull
   @Override
-  public ResolveResult[] multiResolve(boolean incompleteCode) {
-    Set<ResolveResult> results = new HashSet<>();
+  public JsgfResolveResult[] multiResolve(boolean incompleteCode) {
+    Set<JsgfResolveResult> results = new HashSet<>();
     JsgfFile file = (JsgfFile) myElement.getContainingFile();
     // Local rule names take precedence
     if (mode == REFERENCE_MODE.UNQUALIFIED) {
       final List<RuleDeclarationName> names = JsgfUtil.findRulesInFile(file, ruleName);
-      for (RuleName name : names) {
+      for (RuleDeclarationName name : names) {
         results.add(new JsgfResolveResult(name, true));
       }
     }
@@ -112,45 +125,37 @@ public class RuleReferenceReference extends PsiReferenceBase<JsgfRuleReferenceNa
       switch (mode) {
         // If mode is unqualified then we need to consider all imports
         case UNQUALIFIED:
-          importList.addAll(importNames.stream().filter(Predicate.not(Objects::isNull))
-              .collect(Collectors.toList()));
+          importNames.stream().filter(Objects::nonNull).forEachOrdered(importList::add);
           break;
         // If mode is QUALIFIED then we only consider imports with the same simple grammar name
         case QUALIFIED:
-          importList.addAll(importNames.stream().filter(
+          importNames.stream().filter(
               importNameElement -> importNameElement != null
                   && importNameElement.getSimpleGrammarName().equals(simpleGrammarName))
-              .collect(Collectors.toList()));
+              .forEachOrdered(importList::add);
           break;
         // If mode is FULLY_QUALIFIED then we only consider imports with the same fully-qualified grammar name
         case FULLY_QUALIFIED:
-          importList.addAll(importNames.stream().filter(importNameElement ->
-              importNameElement != null
+          importNames.stream()
+              .filter(importNameElement -> importNameElement != null
                   && importNameElement.getPackageName().equals(packageName)
                   && importNameElement.getSimpleGrammarName().equals(simpleGrammarName))
-              .collect(Collectors.toList()));
+              .forEachOrdered(importList::add);
       }
-      for (JsgfRuleImportName importName : importList) {
+      for (@NotNull JsgfRuleImportName importName : importList) {
         // Add all the matching rules of a '*' import
         if (importName.isStarImport()) {
-          ResolveResult[] importResolve = ((ImportNameReference) importName.getReference()).multiResolve(false);
-          List<ResolveResult> foundImports = new ArrayList<>();
-          for (ResolveResult result : importResolve) {
-            if (result.getElement() != null
-                && ((RuleDeclarationName) result.getElement()).getRuleName().equals(ruleName)) {
-              foundImports.add(result);
-            }
-          }
-          results.addAll(foundImports);
+          JsgfResolveResult[] importResolve = importName.getReference().multiResolve(false);
+          Arrays.stream(importResolve).filter(result -> result.getElement().getRuleName().equals(ruleName)).forEachOrdered(results::add);
         }
         // Add imports with a name that matches
         else if (importName.getUnqualifiedRuleName().equals(ruleName)) {
-          ResolveResult[] importResolve = ((ImportNameReference) importName.getReference()).multiResolve(false);
+          JsgfResolveResult[] importResolve = importName.getReference().multiResolve(false);
           Collections.addAll(results, importResolve);
         }
       }
     }
-    return results.toArray(new ResolveResult[0]);
+    return results.toArray(new JsgfResolveResult[0]);
   }
 
   @Nullable
@@ -171,13 +176,13 @@ public class RuleReferenceReference extends PsiReferenceBase<JsgfRuleReferenceNa
     List<RuleDeclarationName> names = JsgfUtil.findRulesInFile(file);
     List<LookupElement> variants = new ArrayList<>();
     final Map<String, Integer> unqualifiedNameCount = new HashMap<>();
-    // if text has a "." then don't add the local rules
     for (final RuleName ruleName : names) {
       String name = ruleName.getRuleName();
       if (name != null && name.length() > 0) {
         variants.add(LookupElementBuilder.create(name)
             .withIcon(JsgfIcons.FILE)
             .withTypeText("Rule")
+            .withInsertHandler(RULE_REFERENCE_INSERT_HANDLER)
         );
         unqualifiedNameCount.put(name, unqualifiedNameCount.computeIfAbsent(name, n -> 0) + 1);
       }
@@ -210,6 +215,9 @@ public class RuleReferenceReference extends PsiReferenceBase<JsgfRuleReferenceNa
       }
       variants.add(builder.getLookupElement());
     }
+    // always add NULL and VOID as options
+    variants.add(LookupElementBuilder.create("VOID").withIcon(JsgfIcons.FILE));
+    variants.add(LookupElementBuilder.create("NULL").withIcon(JsgfIcons.FILE));
     return variants.toArray();
   }
 
@@ -252,7 +260,9 @@ public class RuleReferenceReference extends PsiReferenceBase<JsgfRuleReferenceNa
       return LookupElementBuilder.create(names.pop())
           .withLookupStrings(names)
           .withIcon(JsgfIcons.FILE)
-          .withTypeText("Imported rule from " + importName.getFullyQualifiedGrammarName());
+          .withTypeText("Imported rule from " + importName.getFullyQualifiedGrammarName())
+          .withInsertHandler(RULE_REFERENCE_INSERT_HANDLER)
+          ;
     }
   }
 }

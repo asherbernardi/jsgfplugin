@@ -16,7 +16,7 @@
     <lang.syntaxHighlighterFactory language="JSGF"
       implementationClass="com.asherbernardi.jsgfplugin.JsgfSyntaxHighlighterFactory"/>
     <colorSettingsPage implementation="com.asherbernardi.jsgfplugin.JsgfColorSettingsPage"/>
-    <annotator language="JSGF" implementationClass="com.asherbernardi.jsgfplugin.JsgfGrammarErrorAnnotator"/>
+    <annotator language="JSGF" implementationClass="com.asherbernardi.jsgfplugin.JsgfErrorAnnotator"/>
     <annotator language="JSGF" implementationClass="com.asherbernardi.jsgfplugin.JsgfAnnotator"/>
     <lang.elementManipulator forClass="com.asherbernardi.jsgfplugin.psi.JsgfRuleReferenceName"
         implementationClass="com.asherbernardi.jsgfplugin.psi.manipulators.RuleReferenceManipulator"/>

@@ -21,7 +21,7 @@ public class JsgfPairedBraceMatcher implements PairedBraceMatcher {
       JsgfBnfTypes.LBRACK,
       JsgfBnfTypes.RBRACK,
       false);
-  // This class doesn't work with '<>' which is why we need the special TypeHandler
+  // This class doesn't work with '<>' which is why we need the special TypedHandler
   private final BracePair angles = new BracePair(
       JsgfBnfTypes.LANGLE,
       JsgfBnfTypes.RANGLE,

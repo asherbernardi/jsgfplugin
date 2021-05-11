@@ -25,6 +25,7 @@ _NOTE:_ You must have Intellij installed with version between 2019.3.3 and 2020.
 - search for symbol includes all declared rule names
 - view structure
 - code completion
+- automatic formatting
 
 ![Plugin preview](images/pluginPreview.png)
 

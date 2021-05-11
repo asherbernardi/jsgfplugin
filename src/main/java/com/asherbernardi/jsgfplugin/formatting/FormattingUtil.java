@@ -6,6 +6,7 @@ import com.intellij.formatting.Block;
 import com.intellij.formatting.Indent;
 import com.intellij.formatting.SpacingBuilder;
 import com.intellij.lang.ASTNode;
+import com.intellij.psi.TokenType;
 import com.intellij.psi.tree.TokenSet;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,14 +36,15 @@ public interface FormattingUtil {
       JsgfBnfTypes.TERMINAL, JsgfBnfTypes.STRING, JsgfBnfTypes.GROUP, JsgfBnfTypes.STAR,
       JsgfBnfTypes.PLUS, JsgfBnfTypes.TAG, JsgfParserDefinition.BLOCK_COMMENT,
       JsgfParserDefinition.LINE_COMMENT, JsgfParserDefinition.DOC_COMMENT);
+  TokenSet NON_WHITE_SPACE = TokenSet.andNot(TokenSet.ANY, TokenSet.create(TokenType.WHITE_SPACE));
 
   static List<ASTNode> expandCompositionElements(ASTNode node) {
     if (node.getElementType() == JsgfBnfTypes.ALTERNATIVES) {
-      List<ASTNode> sequences = Arrays.asList(node.getChildren(TokenSet.ANY));
+      List<ASTNode> sequences = Arrays.asList(node.getChildren(NON_WHITE_SPACE));
       return sequences.stream().flatMap(n -> expandCompositionElements(n).stream()).collect(
           Collectors.toList());
     } else if (node.getElementType() == JsgfBnfTypes.SEQUENCE) {
-      List<ASTNode> sequences = Arrays.asList(node.getChildren(TokenSet.ANY));
+      List<ASTNode> sequences = Arrays.asList(node.getChildren(NON_WHITE_SPACE));
       return sequences.stream().flatMap(n -> expandCompositionElements(n).stream()).collect(
           Collectors.toList());
     }

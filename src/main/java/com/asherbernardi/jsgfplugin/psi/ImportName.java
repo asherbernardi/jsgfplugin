@@ -20,11 +20,11 @@ public interface ImportName extends StubBasedPsiElement<ImportStub>, RuleName {
   }
 
   @Override
-  default PsiElement setRuleName(@NotNull String newName) throws IncorrectOperationException {
+  default ImportName setRuleName(@NotNull String newName) throws IncorrectOperationException {
     if (isStarImport()) {
       throw new IncorrectOperationException("Cannot rename a '*' import");
     }
-    return RuleName.super.setRuleName(newName);
+    return (ImportName) RuleName.super.setRuleName(newName);
   }
 
   String getUnqualifiedRuleName();

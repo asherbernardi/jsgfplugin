@@ -9,7 +9,7 @@ import static com.asherbernardi.jsgfplugin.JsgfParserDefinition.*;
 
 %%
 
-%class SimpleLexer
+%class JsgfLexer
 %implements FlexLexer
 %unicode
 %function advance
@@ -78,8 +78,8 @@ LETTER_EXT =
 OTHER_PUNCTUATION = "_" | "+" | "-" | ":" | ";" | "," | "=" | "|" | "/" | \\ | "(" | ")"
                   | "[" | "]" | "@" | "#" | "%" | "!" | "^" | "&" | "~" | "$"
 
-%state RULE_EXPANSION, RULE_NAME, TAG, JAVA_SCRIPT
-%xstate STRING, IN_DOC_COMMENT, IN_BLOCK_COMMENT
+%state RULE_EXPANSION, TAG, JAVA_SCRIPT
+%xstate STRING, IN_DOC_COMMENT, IN_BLOCK_COMMENT, RULE_NAME
 
 %%
 
@@ -93,11 +93,16 @@ OTHER_PUNCTUATION = "_" | "+" | "-" | ":" | ";" | "," | "=" | "|" | "/" | \\ | "
   {IDENTIFIER}                                    { return IDENTIFIER; }
 }
 
+<RULE_EXPANSION> {
+  "|"                                             { return OR; }
+  {WEIGHT}                                        { return WEIGHT; }
+  {TERMINAL} | {IDENTIFIER}                       { return TERMINAL_IDENTIFIER; }
+}
+
 <YYINITIAL, RULE_EXPANSION> {
   {LineComment}                                   { return LINE_COMMENT; }
   "/**"                                           { yyHopOver(IN_DOC_COMMENT); }
   "/*"                                            { yyHopOver(IN_BLOCK_COMMENT); }
-  {WEIGHT}                                        { return WEIGHT; }
   "."                                             { return PERIOD; }
   "*"                                             { return STAR; }
   "="                                             { yybegin(RULE_EXPANSION); return EQUALS; }
@@ -117,7 +122,6 @@ OTHER_PUNCTUATION = "_" | "+" | "-" | ":" | ";" | "," | "=" | "|" | "/" | \\ | "
   \"                                              { yybegin(STRING); return QUOTE; }
   "|"                                             { return OR; }
   "+"                                             { return PLUS; }
-  {TERMINAL} | {IDENTIFIER}                       { return TERMINAL_IDENTIFIER; }
 }
 
 <RULE_NAME> {
@@ -127,6 +131,8 @@ OTHER_PUNCTUATION = "_" | "+" | "-" | ":" | ";" | "," | "=" | "|" | "/" | \\ | "
   "<"                                             { return LANGLE; }
   ">"                                             { yyHopBack(); return RANGLE; }
   {NL}                                            { yyHopBack(); return WHITE_SPACE; }
+  {WHITE_SPACE}                                   { return WHITE_SPACE; }
+  [^]                                             { return BAD_CHARACTER; }
 }
 
 <STRING> {

@@ -12,6 +12,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.FileTypeIndex;
 import com.intellij.psi.search.GlobalSearchScope;
@@ -21,6 +22,7 @@ import com.intellij.psi.tree.TokenSet;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
@@ -33,7 +35,6 @@ public class JsgfUtil {
 
   @NotNull
   public static List<RuleDeclarationName> findRulesInFile(JsgfFile file, String ruleName) {
-    // TODO change type of RuleName
     return findRulesInFile(file, ruleName, false);
   }
 
@@ -64,13 +65,12 @@ public class JsgfUtil {
   }
 
   public static boolean isFirstDeclarationInFile(JsgfFile file, RuleName ruleName) {
-    List<RuleDeclarationName> rules = findRulesInFile(file, ruleName.getRuleName());
-    for (RuleName rule : rules) {
-      if (rule.getTextOffset() < ruleName.getTextOffset()) {
-        return false;
-      }
-    }
-    return true;
+    List<RuleDeclarationName> rules = findRulesInFile(
+        (JsgfFile) ruleName.getContainingFile().getOriginalFile(), ruleName.getRuleName());
+    RuleDeclarationName first = rules.stream().min(Comparator.comparingInt(PsiElement::getTextOffset)).orElse(null);
+    return first == null
+        || (first.getTextOffset() == ruleName.getFirstChild().getTextOffset()
+        && first.getRuleName().equals(ruleName.getRuleName()));
   }
 
   /**
@@ -167,8 +167,8 @@ public class JsgfUtil {
   }
 
   @NotNull
-  public static List<RuleName> findAllRules(Project project) {
-    List<RuleName> allRules = new ArrayList<>();
+  public static List<RuleDeclarationName> findAllRules(Project project) {
+    List<RuleDeclarationName> allRules = new ArrayList<>();
     for (String ruleName : RuleStubIndex.INSTANCE.getAllKeys(project)) {
       allRules.addAll(
           RuleStubIndex.getRulesByName(ruleName, project, GlobalSearchScope.allScope(project)));
@@ -177,7 +177,7 @@ public class JsgfUtil {
   }
 
   @NotNull
-  public static List<RuleName> findAllRules(Project project, String name) {
+  public static List<RuleDeclarationName> findAllRules(Project project, String name) {
     return new ArrayList<>(
         RuleStubIndex.getRulesByName(name, project, GlobalSearchScope.allScope(project)));
   }

@@ -4,6 +4,6 @@ import com.intellij.lexer.FlexAdapter;
 
 public class JsgfLexerAdapter extends FlexAdapter {
   public JsgfLexerAdapter() {
-    super(new SimpleLexer(null));
+    super(new JsgfLexer(null));
   }
 }

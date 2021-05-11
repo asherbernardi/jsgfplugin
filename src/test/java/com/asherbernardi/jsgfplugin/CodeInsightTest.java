@@ -55,7 +55,7 @@ public class CodeInsightTest extends BasePlatformTestCase {
       assertTrue(myFixture.doHighlighting(HighlightSeverity.ERROR).stream()
           .anyMatch(h -> new TextRange(h.startOffset, h.endOffset).equals(reference.getElement().getNode().getTextRange())
               && h.forcedTextAttributesKey == JsgfHighlightType.BAD_REFERENCE.getTextAttributesKey()
-              && h.getDescription().equals("<other.ReferenceTestOther.other2> does not have public access in ReferenceTestOther.jsgf")));
+              && h.getDescription().equals("<other2> does not have public access in ReferenceTestOther.jsgf")));
     }
     {
       // <rule1> reference should work

@@ -13,6 +13,6 @@ public abstract class GroupMixin extends ASTWrapperPsiElement implements JsgfGro
 
   @Override
   public String toString() {
-    return isOptionalGroup() ? "Optional " : "" + "Group";
+    return (isOptionalGroup() ? "Optional " : "") + "Group";
   }
 }

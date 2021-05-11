@@ -16,7 +16,7 @@ public interface RuleName extends PsiElement, NavigatablePsiElement {
     return getText();
   }
 
-  default PsiElement setRuleName(@NotNull String newName) {
+  default RuleName setRuleName(@NotNull String newName) {
     RuleName newRuleName = JsgfElementFactory.createRule(getProject(), newName);
     getNode().replaceAllChildrenToChildrenOf(newRuleName.getNode());
     return this;

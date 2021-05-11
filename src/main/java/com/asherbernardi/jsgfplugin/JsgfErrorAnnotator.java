@@ -23,13 +23,14 @@ import org.jetbrains.annotations.NotNull;
  * Provides semantic error highlighting for JSGF.
  * @author asherbernardi
  */
-public class JsgfGrammarErrorAnnotator implements Annotator {
+public class JsgfErrorAnnotator implements Annotator {
   @Override
   public void annotate(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
     // Mark errors for whitespace before/after rule names. I was not able to get parser to do
     // that automatically... It will ignore whitespace between the angle brackets and the rulename
     if (element instanceof RuleName) {
-      if (element.getNode().getTreeNext().getElementType() != JsgfBnfTypes.RANGLE) {
+      if (element.getNode().getTreeNext() == null
+          || element.getNode().getTreeNext().getElementType() != JsgfBnfTypes.RANGLE) {
         holder.newAnnotation(HighlightSeverity.ERROR,
             "Rule name must be followed be a right angle bracket '>'")
             .range(element).create();
@@ -62,8 +63,8 @@ public class JsgfGrammarErrorAnnotator implements Annotator {
       // reserved special rules
       if ("NULL".equals(ruleRef.getRuleName()) || "VOID".equals(ruleRef.getRuleName()))
         return;
-      RuleReferenceReference ref = (RuleReferenceReference) ruleRef.getReference();
-      ResolveResult[] resolves = ref.multiResolve(false);
+      RuleReferenceReference ref = ruleRef.getReference();
+      JsgfResolveResult[] resolves = ref.multiResolve(false);
       if (resolves.length == 0) {
         holder.newAnnotation(HighlightSeverity.ERROR,
             "Cannot resolve reference to rule: "
@@ -75,8 +76,8 @@ public class JsgfGrammarErrorAnnotator implements Annotator {
         holder.newAnnotation(HighlightSeverity.WARNING,
             "Rule has more than one declaration: "
                 + ruleRef.getRuleName()).range(element).create();
-      } else if (!((JsgfResolveResult) resolves[0]).isLocal()
-          && !((RuleDeclarationName) resolves[0].getElement()).isPublicRule()) {
+      } else if (!resolves[0].isLocal()
+          && !resolves[0].getElement().isPublicRule()) {
         holder.newAnnotation(HighlightSeverity.ERROR,
             "<" + ruleRef.getRuleName() + "> does not have public access in "
                 + resolves[0].getElement().getContainingFile().getName())
@@ -85,7 +86,8 @@ public class JsgfGrammarErrorAnnotator implements Annotator {
       }
     }
     if (element instanceof JsgfRuleImportName) {
-      if (((JsgfRuleImportName) element).isStarImport()) {
+      JsgfRuleImportName importName = (JsgfRuleImportName) element;
+      if (importName.isStarImport()) {
         List<JsgfFile> files = JsgfUtil.findFilesByPackage(((JsgfRuleImportName) element));
         if (files.isEmpty()) {
           holder.newAnnotation(HighlightSeverity.ERROR,
@@ -96,28 +98,26 @@ public class JsgfGrammarErrorAnnotator implements Annotator {
         }
       }
       else {
-        OtherFileNameReference ref = (ImportNameReference) element.getReference();
-        if (ref != null) {
-          ResolveResult[] resolves = ref.multiResolve(false);
-          if (resolves.length == 0) {
-            holder.newAnnotation(HighlightSeverity.ERROR,
-                "Cannot resolve reference to imported rule: "
-                    + ((JsgfRuleImportName) element).getRuleName())
-                .textAttributes(JsgfHighlightType.BAD_REFERENCE.getTextAttributesKey()).range(element).create();
-          } else if (resolves.length > 1) {
-            holder.newAnnotation(HighlightSeverity.ERROR,
-                "Rule import refers to more than one declaration: "
-                    + ((JsgfRuleImportName) element).getRuleName())
-                .range(element)
-                .create();
-          } else if (!((JsgfResolveResult) resolves[0]).isLocal()
-              && !((RuleDeclarationName) resolves[0].getElement()).isPublicRule()) {
-            holder.newAnnotation(HighlightSeverity.ERROR,
-                "<" + ref.getQualifiedName() + "> does not have public access in "
-                    + resolves[0].getElement().getContainingFile().getName())
-                .textAttributes(JsgfHighlightType.BAD_REFERENCE.getTextAttributesKey())
-                .range(element).create();
-          }
+        OtherFileNameReference ref = importName.getReference();
+        JsgfResolveResult[] resolves = ref.multiResolve(false);
+        if (resolves.length == 0) {
+          holder.newAnnotation(HighlightSeverity.ERROR,
+              "Cannot resolve reference to imported rule: "
+                  + ((JsgfRuleImportName) element).getRuleName())
+              .textAttributes(JsgfHighlightType.BAD_REFERENCE.getTextAttributesKey()).range(element).create();
+        } else if (resolves.length > 1) {
+          holder.newAnnotation(HighlightSeverity.ERROR,
+              "Rule import refers to more than one declaration: "
+                  + ((JsgfRuleImportName) element).getRuleName())
+              .range(element)
+              .create();
+        } else if (!resolves[0].isLocal()
+            && !resolves[0].getElement().isPublicRule()) {
+          holder.newAnnotation(HighlightSeverity.ERROR,
+              "<" + ref.getUnqualifiedName() + "> does not have public access in "
+                  + resolves[0].getElement().getContainingFile().getName())
+              .textAttributes(JsgfHighlightType.BAD_REFERENCE.getTextAttributesKey())
+              .range(element).create();
         }
       }
     }

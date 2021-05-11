@@ -1,10 +1,10 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij' version '0.6.3'
+    id 'org.jetbrains.intellij' version '0.7.3'
 }
 
 group 'com.asherbernardi'
-version '1.0.4'
+version '2.0'
 
 patchPluginXml {
     pluginDescription '''
@@ -20,8 +20,9 @@ patchPluginXml {
     <li> search for symbol includes all declared rule names
     <li> view structure
     <li> code completion
+    <li> automatic formatting
 </ul>'''
-    changeNotes "Supports newest IntelliJ version 2020.3"
+    changeNotes "Stub indexes, automatic formatting, and improved parsing"
     sinceBuild "193"
 }
 
@@ -40,7 +41,7 @@ dependencies {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version '2020.3'
+    version '2021.1'
 }
 
 publishPlugin {

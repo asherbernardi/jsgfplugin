@@ -15,6 +15,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class RuleDefinitionBlock extends JsgfBlock {
 
+  private Indent myChildIndent = null;
+
   protected RuleDefinitionBlock(@NotNull ASTNode node, SpacingBuilder spacingBuilder, CodeStyleSettings settings) {
     super(node, spacingBuilder, settings);
   }
@@ -26,7 +28,6 @@ public class RuleDefinitionBlock extends JsgfBlock {
     List<Block> simpleBlocks = new ArrayList<>();
     // The indent for the child of this block, not determined until we reach the Alternatives
     // child element
-    Indent childIndent = null;
     while (child != null) {
       if (child.getTextLength() != 0) {
         if (child.getElementType() == JsgfBnfTypes.ALTERNATIVES) {
@@ -36,13 +37,14 @@ public class RuleDefinitionBlock extends JsgfBlock {
             // if this rule definition consists of just one group, don't indent it
             if (grouped.size() == 1 && grouped.get(0).size() == 1
                 && grouped.get(0).get(0).getElementType() == JsgfBnfTypes.GROUP) {
-              childIndent = getSettings().getCustomSettings(JsgfCodeStyleSettings.class).INDENT_SINGLE_GROUP_RULES
+              myChildIndent = getSettings().getCustomSettings(JsgfCodeStyleSettings.class).INDENT_SINGLE_GROUP_RULES
                   ? Indent.getNormalIndent() : Indent.getNoneIndent();
             } else {
-              childIndent = getSettings().getCustomSettings(JsgfCodeStyleSettings.class).INDENT_SINGLE_ALTERNATIVES_RULES
+              myChildIndent = getSettings().getCustomSettings(JsgfCodeStyleSettings.class).INDENT_SINGLE_ALTERNATIVES_RULES
                   ? Indent.getNormalIndent() : Indent.getNoneIndent();
             }
-            blocks.add(new LineGroupBlock(lineGroup, getSpacingBuilder(), getSettings(), childIndent));
+            blocks.add(new LineGroupBlock(lineGroup, getSpacingBuilder(), getSettings(),
+                myChildIndent));
           }
         } else if (child.getElementType() == JsgfBnfTypes.PUBLIC
             || child.getElementType() == JsgfBnfTypes.RULE_DECLARATION
@@ -57,10 +59,10 @@ public class RuleDefinitionBlock extends JsgfBlock {
       }
       child = child.getTreeNext();
     }
-    if (childIndent != null) {
+    if (myChildIndent != null) {
       for (Block simpleBlock : simpleBlocks) {
         if (simpleBlock instanceof LeafBlock) {
-          ((LeafBlock) simpleBlock).setIndent(childIndent);
+          ((LeafBlock) simpleBlock).setIndent(myChildIndent);
         }
       }
     }
@@ -74,6 +76,7 @@ public class RuleDefinitionBlock extends JsgfBlock {
 
   @Override
   public @NotNull ChildAttributes getChildAttributes(int newChildIndex) {
+    if (myChildIndent != null) return new ChildAttributes(myChildIndent, null);
     if (!isAfter(newChildIndex, JsgfBnfTypes.RULE_DECLARATION)) {
       return new ChildAttributes(Indent.getNormalIndent(), null);
     }

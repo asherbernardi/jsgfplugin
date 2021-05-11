@@ -22,28 +22,22 @@ public abstract class OtherFileNameReference extends PsiReferenceBase<JsgfRuleIm
     PsiPolyVariantReference {
 
   private final String unqualifiedName;
-  private final String qualifiedName;
-  private final String packageName;
+  private final String fullyQualifiedGrammarName;
 
-  public OtherFileNameReference(JsgfRuleImportName element, TextRange range) {
+  public OtherFileNameReference(@NotNull JsgfRuleImportName element, TextRange range) {
     super(element, range);
     // Careful of "IntellijIdeaRulezzz" which is used to make sure the autocomplete takes context into account
     // https://intellij-support.jetbrains.com/hc/en-us/community/posts/206752355-The-dreaded-IntellijIdeaRulezzz-string
-    qualifiedName = element.getRuleName();
     unqualifiedName = element.getUnqualifiedRuleName();
-    packageName = element.getFullyQualifiedGrammarName();
+    fullyQualifiedGrammarName = element.getRuleName();
   }
 
   public String getUnqualifiedName() {
     return unqualifiedName;
   }
 
-  public String getQualifiedName() {
-    return qualifiedName;
-  }
-
-  public String getPackageName() {
-    return packageName;
+  public String getFullyQualifiedGrammarName() {
+    return fullyQualifiedGrammarName;
   }
 
   @NotNull
@@ -58,20 +52,19 @@ public abstract class OtherFileNameReference extends PsiReferenceBase<JsgfRuleIm
 
   @NotNull
   @Override
-  public ResolveResult[] multiResolve(boolean incompleteCode) {
+  public JsgfResolveResult[] multiResolve(boolean incompleteCode) {
     final List<RuleDeclarationName> refs = getRules(false);
-    List<ResolveResult> results = new ArrayList<>();
+    List<JsgfResolveResult> results = new ArrayList<>();
     for (RuleDeclarationName ref : refs) {
-      ResolveResult result = new JsgfResolveResult(ref, false);
-      results.add(result);
+      results.add(new JsgfResolveResult(ref, false));
     }
-    return results.toArray(new ResolveResult[0]);
+    return results.toArray(new JsgfResolveResult[0]);
   }
 
   @Nullable
   @Override
   public PsiElement resolve() {
-    ResolveResult[] resolveResults = multiResolve(false);
+    JsgfResolveResult[] resolveResults = multiResolve(false);
     if (resolveResults.length > 0 && myElement.isStarImport()) {
       return ((JsgfFile) resolveResults[0].getElement().getContainingFile()).getGrammarName();
     }
@@ -86,18 +79,13 @@ public abstract class OtherFileNameReference extends PsiReferenceBase<JsgfRuleIm
   public Object[] getVariants() {
     List<RuleDeclarationName> names = getRulesByPackage(true);
     List<LookupElement> variants = new ArrayList<>();
-    JsgfRuleImportName element = myElement;
-    String unqualifiedName = element.getUnqualifiedRuleName();
-    String packageName = element.getFullyQualifiedGrammarName();
-    for (final PsiElement ref : names) {
-      if (ref instanceof JsgfRuleDeclarationName) {
-        RuleName name = (RuleName) ref;
-        if (name.getRuleName() != null && !name.getRuleName().isEmpty()) {
-          variants.add(LookupElementBuilder
-              .create(packageName + '.' + name.getRuleName()).withIcon(JsgfIcons.FILE)
-              .withTypeText(name.getContainingFile().getName())
-          );
-        }
+    String packageName = getFullyQualifiedGrammarName();
+    for (final RuleName ref : names) {
+      if (ref.getRuleName() != null && !ref.getRuleName().isEmpty()) {
+        variants.add(LookupElementBuilder
+            .create(packageName + '.' + ref.getRuleName()).withIcon(JsgfIcons.FILE)
+            .withTypeText(ref.getContainingFile().getName())
+        );
       }
     }
     if (!names.isEmpty()) {
