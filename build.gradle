@@ -22,7 +22,7 @@ patchPluginXml {
     <li> code completion
     <li> automatic formatting
 </ul>'''
-    changeNotes "Stub indexes, automatic formatting, and improved parsing"
+    changeNotes "New version 212.*"
     sinceBuild "193"
 }
 
@@ -41,7 +41,7 @@ dependencies {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version '2021.1'
+    version '2021.2'
 }
 
 publishPlugin {
