@@ -22,8 +22,14 @@ patchPluginXml {
     <li> code completion
     <li> automatic formatting
 </ul>'''
-    changeNotes "New version 212.*"
-    sinceBuild "193"
+    changeNotes '''
+<ul>
+    <li>New version 213.*
+    <li>Improved quote matcher
+    <li>Warnings for unused rules
+</ul>
+'''
+    sinceBuild "203"
 }
 
 sourceCompatibility = 11
@@ -41,7 +47,7 @@ dependencies {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version '2021.2'
+    version '2021.3'
 }
 
 publishPlugin {
