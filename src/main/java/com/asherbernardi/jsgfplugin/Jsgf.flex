@@ -119,7 +119,7 @@ OTHER_PUNCTUATION = "_" | "+" | "-" | ":" | ";" | "," | "=" | "|" | "/" | \\ | "
   "}"                                             { return RBRACE; }
   "["                                             { return LBRACK; }
   "]"                                             { return RBRACK; }
-  \"                                              { yybegin(STRING); return QUOTE; }
+  \"                                              { yybegin(STRING); return QUOTE_OPEN; }
   "|"                                             { return OR; }
   "+"                                             { return PLUS; }
 }
@@ -137,7 +137,7 @@ OTHER_PUNCTUATION = "_" | "+" | "-" | ":" | ";" | "," | "=" | "|" | "/" | \\ | "
 
 <STRING> {
   ( [^\"\n\r\ufeff] | \\\" )+                     { return STRING_TEXT;}
-  \"                                              { yybegin(RULE_EXPANSION); return QUOTE;}
+  \"                                              { yybegin(RULE_EXPANSION); return QUOTE_CLOSE;}
   {NL}                                            { yybegin(RULE_EXPANSION); return STRING_NL;}
   [^]                                             { yybegin(RULE_EXPANSION); return BAD_CHARACTER; }
 }

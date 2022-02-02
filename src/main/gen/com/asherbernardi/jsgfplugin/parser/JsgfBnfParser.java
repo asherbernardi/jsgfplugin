@@ -860,7 +860,7 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // !(RANGLE|STAR|PLUS|LBRACE|BIAS|LANGLE|TERMINAL_IDENTIFIER|IDENTIFIER|PARSING_KEYWORD|QUOTE|LPAREN|LBRACK
+  // !(RANGLE|STAR|PLUS|LBRACE|BIAS|LANGLE|TERMINAL_IDENTIFIER|IDENTIFIER|PARSING_KEYWORD|QUOTE_OPEN|QUOTE_CLOSE|LPAREN|LBRACK
   //   |OR|AND|AND_AND|AND_END|AND_START|SEMICOLON|RPAREN|RBRACK|WEIGHT)
   static boolean ruleReference_recover(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "ruleReference_recover")) return false;
@@ -871,7 +871,7 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // RANGLE|STAR|PLUS|LBRACE|BIAS|LANGLE|TERMINAL_IDENTIFIER|IDENTIFIER|PARSING_KEYWORD|QUOTE|LPAREN|LBRACK
+  // RANGLE|STAR|PLUS|LBRACE|BIAS|LANGLE|TERMINAL_IDENTIFIER|IDENTIFIER|PARSING_KEYWORD|QUOTE_OPEN|QUOTE_CLOSE|LPAREN|LBRACK
   //   |OR|AND|AND_AND|AND_END|AND_START|SEMICOLON|RPAREN|RBRACK|WEIGHT
   private static boolean ruleReference_recover_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "ruleReference_recover_0")) return false;
@@ -885,7 +885,8 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
     if (!r) r = consumeToken(b, TERMINAL_IDENTIFIER);
     if (!r) r = consumeToken(b, IDENTIFIER);
     if (!r) r = consumeToken(b, PARSING_KEYWORD);
-    if (!r) r = consumeToken(b, QUOTE);
+    if (!r) r = consumeToken(b, QUOTE_OPEN);
+    if (!r) r = consumeToken(b, QUOTE_CLOSE);
     if (!r) r = consumeToken(b, LPAREN);
     if (!r) r = consumeToken(b, LBRACK);
     if (!r) r = consumeToken(b, OR);
@@ -901,7 +902,7 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // !(STAR|PLUS|LBRACE|BIAS|LANGLE|TERMINAL_IDENTIFIER|IDENTIFIER|PARSING_KEYWORD|QUOTE|LPAREN|LBRACK
+  // !(STAR|PLUS|LBRACE|BIAS|LANGLE|TERMINAL_IDENTIFIER|IDENTIFIER|PARSING_KEYWORD|QUOTE_OPEN|QUOTE_CLOSE|LPAREN|LBRACK
   //   |OR|AND|AND_AND|AND_END|AND_START|SEMICOLON|RPAREN|RBRACK|WEIGHT)
   static boolean ruleReference_top_recover(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "ruleReference_top_recover")) return false;
@@ -912,7 +913,7 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // STAR|PLUS|LBRACE|BIAS|LANGLE|TERMINAL_IDENTIFIER|IDENTIFIER|PARSING_KEYWORD|QUOTE|LPAREN|LBRACK
+  // STAR|PLUS|LBRACE|BIAS|LANGLE|TERMINAL_IDENTIFIER|IDENTIFIER|PARSING_KEYWORD|QUOTE_OPEN|QUOTE_CLOSE|LPAREN|LBRACK
   //   |OR|AND|AND_AND|AND_END|AND_START|SEMICOLON|RPAREN|RBRACK|WEIGHT
   private static boolean ruleReference_top_recover_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "ruleReference_top_recover_0")) return false;
@@ -925,7 +926,8 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
     if (!r) r = consumeToken(b, TERMINAL_IDENTIFIER);
     if (!r) r = consumeToken(b, IDENTIFIER);
     if (!r) r = consumeToken(b, PARSING_KEYWORD);
-    if (!r) r = consumeToken(b, QUOTE);
+    if (!r) r = consumeToken(b, QUOTE_OPEN);
+    if (!r) r = consumeToken(b, QUOTE_CLOSE);
     if (!r) r = consumeToken(b, LPAREN);
     if (!r) r = consumeToken(b, LBRACK);
     if (!r) r = consumeToken(b, OR);
@@ -1004,20 +1006,20 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // string_with_recover QUOTE
+  // string_with_recover QUOTE_CLOSE
   public static boolean string(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "string")) return false;
-    if (!nextTokenIs(b, QUOTE)) return false;
+    if (!nextTokenIs(b, QUOTE_OPEN)) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = string_with_recover(b, l + 1);
-    r = r && consumeToken(b, QUOTE);
+    r = r && consumeToken(b, QUOTE_CLOSE);
     exit_section_(b, m, STRING, r);
     return r;
   }
 
   /* ********************************************************** */
-  // !(QUOTE | STRING_NL)
+  // !(QUOTE_CLOSE | STRING_NL)
   static boolean string_recover(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "string_recover")) return false;
     boolean r;
@@ -1027,22 +1029,22 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // QUOTE | STRING_NL
+  // QUOTE_CLOSE | STRING_NL
   private static boolean string_recover_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "string_recover_0")) return false;
     boolean r;
-    r = consumeToken(b, QUOTE);
+    r = consumeToken(b, QUOTE_CLOSE);
     if (!r) r = consumeToken(b, STRING_NL);
     return r;
   }
 
   /* ********************************************************** */
-  // QUOTE [STRING_TEXT]
+  // QUOTE_OPEN [STRING_TEXT]
   static boolean string_with_recover(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "string_with_recover")) return false;
     boolean r, p;
     Marker m = enter_section_(b, l, _NONE_);
-    r = consumeToken(b, QUOTE);
+    r = consumeToken(b, QUOTE_OPEN);
     p = r; // pin = 1
     r = r && string_with_recover_1(b, l + 1);
     exit_section_(b, l, m, r, p, JsgfBnfParser::string_recover);

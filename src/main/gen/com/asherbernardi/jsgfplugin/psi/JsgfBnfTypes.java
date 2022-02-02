@@ -49,7 +49,8 @@ public interface JsgfBnfTypes {
   IElementType PERIOD = new JsgfTokenType(".");
   IElementType PLUS = new JsgfTokenType("+");
   IElementType PUBLIC = new JsgfTokenType("public");
-  IElementType QUOTE = new JsgfTokenType("\"");
+  IElementType QUOTE_CLOSE = new JsgfTokenType("'");
+  IElementType QUOTE_OPEN = new JsgfTokenType("\"");
   IElementType RANGLE = new JsgfTokenType(">");
   IElementType RBRACE = new JsgfTokenType("}");
   IElementType RBRACK = new JsgfTokenType("]");

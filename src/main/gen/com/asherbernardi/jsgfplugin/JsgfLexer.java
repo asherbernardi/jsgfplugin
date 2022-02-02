@@ -686,7 +686,7 @@ class JsgfLexer implements FlexLexer {
             // fall through
           case 54: break;
           case 12: 
-            { yybegin(STRING); return QUOTE;
+            { yybegin(STRING); return QUOTE_OPEN;
             } 
             // fall through
           case 55: break;
@@ -751,7 +751,7 @@ class JsgfLexer implements FlexLexer {
             // fall through
           case 67: break;
           case 25: 
-            { yybegin(RULE_EXPANSION); return QUOTE;
+            { yybegin(RULE_EXPANSION); return QUOTE_CLOSE;
             } 
             // fall through
           case 68: break;

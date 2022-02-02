@@ -29,7 +29,8 @@
     RBRACK = ']'
     LANGLE = '<'
     RANGLE = '>'
-    QUOTE = '"'
+    QUOTE_OPEN = '"'
+    QUOTE_CLOSE = "'"
     OR = '|'
     PLUS = '+'
     PERIOD = '.'
@@ -148,14 +149,14 @@ ruleReference ::= ruleReference_with_recover RANGLE {
   mixin = "com.asherbernardi.jsgfplugin.psi.impl.RuleReferenceMixin"
 }
 private ruleReference_top_recover ::=
-  !(STAR|PLUS|LBRACE|BIAS|LANGLE|TERMINAL_IDENTIFIER|IDENTIFIER|PARSING_KEYWORD|QUOTE|LPAREN|LBRACK
+  !(STAR|PLUS|LBRACE|BIAS|LANGLE|TERMINAL_IDENTIFIER|IDENTIFIER|PARSING_KEYWORD|QUOTE_OPEN|QUOTE_CLOSE|LPAREN|LBRACK
   |OR|AND|AND_AND|AND_END|AND_START|SEMICOLON|RPAREN|RBRACK|WEIGHT)
 private ruleReference_with_recover ::= LANGLE ruleReferenceName {
   pin = 1
   recoverWhile = ruleReference_recover
 }
 private ruleReference_recover ::=
-  !(RANGLE|STAR|PLUS|LBRACE|BIAS|LANGLE|TERMINAL_IDENTIFIER|IDENTIFIER|PARSING_KEYWORD|QUOTE|LPAREN|LBRACK
+  !(RANGLE|STAR|PLUS|LBRACE|BIAS|LANGLE|TERMINAL_IDENTIFIER|IDENTIFIER|PARSING_KEYWORD|QUOTE_OPEN|QUOTE_CLOSE|LPAREN|LBRACK
   |OR|AND|AND_AND|AND_END|AND_START|SEMICOLON|RPAREN|RBRACK|WEIGHT)
 ruleReferenceName ::= RULE_NAME_IDENTIFIER (PERIOD RULE_NAME_IDENTIFIER)* {
   mixin = "com.asherbernardi.jsgfplugin.psi.impl.RuleReferenceNameMixin"
@@ -167,16 +168,16 @@ terminal ::= TERMINAL_IDENTIFIER | IDENTIFIER {
   mixin = "com.asherbernardi.jsgfplugin.psi.impl.TerminalMixin"
 }
 
-string ::= string_with_recover QUOTE {
+string ::= string_with_recover QUOTE_CLOSE {
   mixin = "com.asherbernardi.jsgfplugin.psi.impl.StringMixin"
   methods = [getStringText]
 }
-private string_with_recover ::= QUOTE [STRING_TEXT] {
+private string_with_recover ::= QUOTE_OPEN [STRING_TEXT] {
   pin = 1
   recoverWhile = string_recover
 }
 // Recover until the lexer exits the STRING state
-private string_recover ::= !(QUOTE | STRING_NL)
+private string_recover ::= !(QUOTE_CLOSE | STRING_NL)
 
 alternatives ::= unweighted_alternatives | weighted_alternatives {
   mixin = "com.asherbernardi.jsgfplugin.psi.impl.AlternativesMixin"

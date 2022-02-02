@@ -13,6 +13,7 @@ import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.ResolveResult;
+import com.intellij.psi.search.searches.ReferencesSearch;
 import com.intellij.psi.util.PsiTreeUtil;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -140,7 +141,7 @@ public class JsgfErrorAnnotator implements Annotator {
       }
     }
     // Hanging string
-    if (element.getNode().getElementType() == JsgfBnfTypes.QUOTE) {
+    if (element.getNode().getElementType() == JsgfBnfTypes.QUOTE_OPEN) {
       ASTNode next = element.getNode().getTreeNext();
       if (next != null &&
           (

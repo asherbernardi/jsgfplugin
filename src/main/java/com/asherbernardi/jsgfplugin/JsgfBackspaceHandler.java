@@ -33,15 +33,6 @@ public class JsgfBackspaceHandler extends BackspaceHandlerDelegate {
         return true;
       }
     }
-    if (file.getFileType().equals(JsgfFileType.INSTANCE) && c == '"') {
-      int openQuoteOffset = editor.getCaretModel().getOffset();
-      if (editor.getDocument().getTextLength() <= openQuoteOffset) return false; //virtual space after end of file
-      IElementType nextTokenType = PsiUtilCore.getElementAtOffset(file, openQuoteOffset + 1).getNode().getElementType();
-      if (nextTokenType == JsgfBnfTypes.QUOTE) {
-        editor.getDocument().deleteString(openQuoteOffset, openQuoteOffset + 1);
-        return true;
-      }
-    }
     return false;
   }
 }
