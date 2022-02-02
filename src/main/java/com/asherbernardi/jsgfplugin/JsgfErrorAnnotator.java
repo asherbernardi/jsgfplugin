@@ -42,7 +42,7 @@ public class JsgfErrorAnnotator implements Annotator {
             .range(element).create();
       }
     }
-    // Mark rule declarations that have that have already been defined as an error
+    // Mark rule declarations that have already been defined as an error
     if (element instanceof JsgfRuleDeclarationName) {
       JsgfRuleDeclarationName ruleName = (JsgfRuleDeclarationName) element;
       if ("NULL".equals(ruleName.getRuleName()) || "VOID".equals(ruleName.getRuleName())) {
@@ -54,6 +54,12 @@ public class JsgfErrorAnnotator implements Annotator {
       if (!JsgfUtil.isFirstDeclarationInFile((JsgfFile) element.getContainingFile(), ruleName)) {
         holder.newAnnotation(HighlightSeverity.ERROR,
             "Rule <" + ruleName.getRuleName() + "> already defined")
+            .range(ruleName)
+            .create();
+      }
+      if (ReferencesSearch.search(ruleName).findFirst() == null) {
+        holder.newAnnotation(HighlightSeverity.WARNING,
+                "Unused rule")
             .range(ruleName)
             .create();
       }
