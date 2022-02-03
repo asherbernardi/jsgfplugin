@@ -1,13 +1,13 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij' version '0.7.3'
+    id 'org.jetbrains.intellij' version '1.3.1'
 }
 
 group 'com.asherbernardi'
-version '2.0.1'
+version '2.1.1'
 
 patchPluginXml {
-    pluginDescription '''
+    pluginDescription.set('''
 <p>This is a plugin for all JetBrains IDEs to support the JSGF file format.</p>
 <ul>
     <li> syntax highlighting
@@ -21,15 +21,15 @@ patchPluginXml {
     <li> view structure
     <li> code completion
     <li> automatic formatting
-</ul>'''
-    changeNotes '''
+</ul>''')
+    changeNotes.set('''
 <ul>
     <li>New version 213.*
     <li>Improved quote matcher
     <li>Warnings for unused rules
 </ul>
-'''
-    sinceBuild "203"
+''')
+    sinceBuild.set("203")
 }
 
 sourceCompatibility = 11
@@ -42,14 +42,22 @@ repositories {
 sourceSets.main.java.srcDirs 'src/main/gen'
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testImplementation group: 'junit', name: 'junit', version: '4.13.2'
+}
+
+test {
+    systemProperty "idea.home.path", "C:/Program Files/JetBrains/IntelliJ IDEA Community Edition 2021.1"
+    // Workaround for test failures https://youtrack.jetbrains.com/issue/IDEA-278926?_ga=2.196016364.1950444123.1643221178-2000276811.1643221178#focus=Comments-27-5561012.0-0
+    scanForTestClasses false
+    include "**/*Test.class"
 }
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version '2021.3'
+    version.set('2021.3')
+    downloadSources = true
 }
 
 publishPlugin {
-    token intellijPublishToken
+    token.set(intellijPublishToken)
 }
