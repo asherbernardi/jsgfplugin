@@ -6,50 +6,43 @@ import com.intellij.formatting.Block;
 import com.intellij.formatting.Indent;
 import com.intellij.formatting.SpacingBuilder;
 import com.intellij.lang.ASTNode;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.TokenType;
+import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.intellij.psi.tree.TokenSet;
+import com.asherbernardi.jsgfplugin.psi.JsgfGrammarName;
+import com.asherbernardi.jsgfplugin.psi.JsgfRuleDeclaration;
+import com.asherbernardi.jsgfplugin.psi.JsgfRuleImport;
+import com.asherbernardi.jsgfplugin.psi.JsgfStringExp;
+import com.asherbernardi.jsgfplugin.psi.JsgfTypes;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public interface FormattingUtil {
 
-  static Block createSimpleBlock(ASTNode child, Indent indent, SpacingBuilder spacingBuilder) {
-    if (child.getFirstChildNode() == null
-        || child.getElementType() == JsgfBnfTypes.STRING
-        || child.getElementType() == JsgfBnfTypes.GRAMMAR_NAME
-        || child.getElementType() == JsgfBnfTypes.IMPORT
-        || child.getElementType() == JsgfBnfTypes.RULE_DECLARATION
-        || child.getElementType() == JsgfBnfTypes.TERMINAL
-        || child.getElementType() == JsgfBnfTypes.RULE_REFERENCE) {
+  static Block createSimpleBlock(PsiElement child, Indent indent, SpacingBuilder spacingBuilder) {
+    if (child instanceof LeafPsiElement
+        || child.getFirstChild() == null
+        || child instanceof JsgfStringExp
+        || child instanceof JsgfGrammarName
+        || child instanceof JsgfRuleImport
+        || child instanceof JsgfRuleDeclaration) {
       return new LeafBlock(child, indent);
     } else {
-      return new SimpleBlock(child, spacingBuilder);
+      return new SimpleBlock(child, spacingBuilder, indent);
     }
   }
 
-  TokenSet ALTERNATIVES_CHILDREN = TokenSet.create(JsgfBnfTypes.SEQUENCE,
-      JsgfBnfTypes.OR, JsgfBnfTypes.WEIGHT, JsgfParserDefinition.BLOCK_COMMENT,
-      JsgfParserDefinition.LINE_COMMENT, JsgfParserDefinition.DOC_COMMENT);
-  TokenSet SEQUENCE_CHILDREN = TokenSet.create(JsgfBnfTypes.RULE_REFERENCE,
-      JsgfBnfTypes.TERMINAL, JsgfBnfTypes.STRING, JsgfBnfTypes.GROUP, JsgfBnfTypes.STAR,
-      JsgfBnfTypes.PLUS, JsgfBnfTypes.TAG, JsgfParserDefinition.BLOCK_COMMENT,
-      JsgfParserDefinition.LINE_COMMENT, JsgfParserDefinition.DOC_COMMENT);
+  TokenSet ALTERNATIVES_CHILDREN = TokenSet.create(JsgfBnfTypes.SEQUENCE_EXP,
+      JsgfBnfTypes.OR, JsgfBnfTypes.WEIGHT, JsgfTypes.BLOCK_COMMENT,
+      JsgfTypes.LINE_COMMENT, JsgfTypes.DOC_COMMENT);
+  TokenSet SEQUENCE_CHILDREN = TokenSet.create(JsgfBnfTypes.RULE_REFERENCE_EXP,
+      JsgfBnfTypes.TERMINAL_EXP, JsgfBnfTypes.STRING_EXP, JsgfBnfTypes.PARENTHESES_GROUP_EXP,
+      JsgfBnfTypes.OPTIONAL_GROUP_EXP, JsgfBnfTypes.STAR,
+      JsgfBnfTypes.PLUS, JsgfBnfTypes.TAG, JsgfTypes.BLOCK_COMMENT,
+      JsgfTypes.LINE_COMMENT, JsgfTypes.DOC_COMMENT);
   TokenSet NON_WHITE_SPACE = TokenSet.andNot(TokenSet.ANY, TokenSet.create(TokenType.WHITE_SPACE));
-
-  static List<ASTNode> expandCompositionElements(ASTNode node) {
-    if (node.getElementType() == JsgfBnfTypes.ALTERNATIVES) {
-      List<ASTNode> sequences = Arrays.asList(node.getChildren(NON_WHITE_SPACE));
-      return sequences.stream().flatMap(n -> expandCompositionElements(n).stream()).collect(
-          Collectors.toList());
-    } else if (node.getElementType() == JsgfBnfTypes.SEQUENCE) {
-      List<ASTNode> sequences = Arrays.asList(node.getChildren(NON_WHITE_SPACE));
-      return sequences.stream().flatMap(n -> expandCompositionElements(n).stream()).collect(
-          Collectors.toList());
-    }
-    return Arrays.asList(node);
-  }
 
   static List<List<ASTNode>> groupByLine(List<ASTNode> nodes) {
     List<List<ASTNode>> result = new ArrayList<>();
@@ -71,5 +64,23 @@ public interface FormattingUtil {
       }
     }
     return result;
+  }
+
+  static Iterable<PsiElement> iterableOfChildren(PsiElement parent) {
+    return () -> new Iterator<>() {
+      PsiElement current = parent.getFirstChild();
+
+      @Override
+      public boolean hasNext() {
+        return current != null;
+      }
+
+      @Override
+      public PsiElement next() {
+        PsiElement oldCurrent = current;
+        current = current.getNextSibling();
+        return oldCurrent;
+      }
+    };
   }
 }

@@ -10,14 +10,14 @@ import com.intellij.psi.util.PsiTreeUtil;
 import static com.asherbernardi.jsgfplugin.psi.JsgfBnfTypes.*;
 import com.asherbernardi.jsgfplugin.psi.*;
 
-public class JsgfStringImpl extends StringMixin implements JsgfString {
+public class JsgfUnaryOperationExpImpl extends UnaryOperationMixin implements JsgfUnaryOperationExp {
 
-  public JsgfStringImpl(@NotNull ASTNode node) {
+  public JsgfUnaryOperationExpImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull JsgfVisitor visitor) {
-    visitor.visitString(this);
+    visitor.visitUnaryOperationExp(this);
   }
 
   @Override
@@ -27,8 +27,9 @@ public class JsgfStringImpl extends StringMixin implements JsgfString {
   }
 
   @Override
-  public String getStringText() {
-    return JsgfPsiImplInjections.getStringText(this);
+  @NotNull
+  public JsgfExpansion getExpansion() {
+    return notNullChild(PsiTreeUtil.getChildOfType(this, JsgfExpansion.class));
   }
 
 }

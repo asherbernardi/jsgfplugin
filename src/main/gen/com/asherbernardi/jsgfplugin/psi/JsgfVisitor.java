@@ -7,8 +7,16 @@ import com.intellij.psi.PsiElement;
 
 public class JsgfVisitor extends PsiElementVisitor {
 
-  public void visitAlternatives(@NotNull JsgfAlternatives o) {
+  public void visitAlternativesExp(@NotNull JsgfAlternativesExp o) {
+    visitExpansion(o);
+  }
+
+  public void visitExpansion(@NotNull JsgfExpansion o) {
     visitPsiElement(o);
+  }
+
+  public void visitExpansionWithTagExp(@NotNull JsgfExpansionWithTagExp o) {
+    visitExpansion(o);
   }
 
   public void visitGrammarDeclaration(@NotNull JsgfGrammarDeclaration o) {
@@ -19,8 +27,8 @@ public class JsgfVisitor extends PsiElementVisitor {
     visitGrammarName(o);
   }
 
-  public void visitGroup(@NotNull JsgfGroup o) {
-    visitPsiElement(o);
+  public void visitGroupExp(@NotNull JsgfGroupExp o) {
+    visitExpansion(o);
   }
 
   public void visitHeader(@NotNull JsgfHeader o) {
@@ -31,12 +39,20 @@ public class JsgfVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
+  public void visitOptionalGroupExp(@NotNull JsgfOptionalGroupExp o) {
+    visitGroupExp(o);
+  }
+
+  public void visitParenthesesGroupExp(@NotNull JsgfParenthesesGroupExp o) {
+    visitGroupExp(o);
+  }
+
   public void visitRuleDeclaration(@NotNull JsgfRuleDeclaration o) {
     visitPsiElement(o);
   }
 
   public void visitRuleDeclarationName(@NotNull JsgfRuleDeclarationName o) {
-    visitRuleDeclarationName(o);
+    visitRuleName(o);
   }
 
   public void visitRuleDefinition(@NotNull JsgfRuleDefinition o) {
@@ -48,35 +64,43 @@ public class JsgfVisitor extends PsiElementVisitor {
   }
 
   public void visitRuleImportName(@NotNull JsgfRuleImportName o) {
-    visitImportName(o);
-  }
-
-  public void visitRuleReference(@NotNull JsgfRuleReference o) {
-    visitPsiElement(o);
+    visitRuleName(o);
   }
 
   public void visitRuleReferenceName(@NotNull JsgfRuleReferenceName o) {
     visitRuleName(o);
   }
 
-  public void visitSequence(@NotNull JsgfSequence o) {
-    visitPsiElement(o);
+  public void visitRuleReferenceExp(@NotNull JsgfRuleReferenceExp o) {
+    visitExpansion(o);
   }
 
-  public void visitString(@NotNull JsgfString o) {
-    visitPsiElement(o);
+  public void visitSequenceExp(@NotNull JsgfSequenceExp o) {
+    visitExpansion(o);
+  }
+
+  public void visitStringExp(@NotNull JsgfStringExp o) {
+    visitExpansion(o);
   }
 
   public void visitTag(@NotNull JsgfTag o) {
     visitPsiElement(o);
   }
 
-  public void visitTerminal(@NotNull JsgfTerminal o) {
-    visitPsiElement(o);
+  public void visitTerminalExp(@NotNull JsgfTerminalExp o) {
+    visitExpansion(o);
   }
 
-  public void visitImportName(@NotNull ImportName o) {
-    visitElement(o);
+  public void visitUnaryOperationExp(@NotNull JsgfUnaryOperationExp o) {
+    visitExpansion(o);
+  }
+
+  public void visitUnweightedAlternativesExp(@NotNull JsgfUnweightedAlternativesExp o) {
+    visitAlternativesExp(o);
+  }
+
+  public void visitWeightedAlternativesExp(@NotNull JsgfWeightedAlternativesExp o) {
+    visitAlternativesExp(o);
   }
 
   public void visitRuleName(@NotNull RuleName o) {

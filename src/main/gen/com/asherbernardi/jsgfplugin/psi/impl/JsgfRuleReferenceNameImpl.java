@@ -9,7 +9,8 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static com.asherbernardi.jsgfplugin.psi.JsgfBnfTypes.*;
 import com.asherbernardi.jsgfplugin.psi.*;
-import com.asherbernardi.jsgfplugin.psi.reference.RuleReferenceReference;
+import com.asherbernardi.jsgfplugin.psi.reference.LocalReferencePair;
+import com.intellij.psi.PsiReference;
 import com.intellij.psi.search.SearchScope;
 
 public class JsgfRuleReferenceNameImpl extends RuleReferenceNameMixin implements JsgfRuleReferenceName {
@@ -30,8 +31,14 @@ public class JsgfRuleReferenceNameImpl extends RuleReferenceNameMixin implements
 
   @Override
   @NotNull
-  public RuleReferenceReference getReference() {
-    return JsgfPsiImplInjections.getReference(this);
+  public LocalReferencePair getReferencePair() {
+    return JsgfPsiImplInjections.getReferencePair(this);
+  }
+
+  @Override
+  @NotNull
+  public PsiReference[] getReferences() {
+    return JsgfPsiImplInjections.getReferences(this);
   }
 
   @Override

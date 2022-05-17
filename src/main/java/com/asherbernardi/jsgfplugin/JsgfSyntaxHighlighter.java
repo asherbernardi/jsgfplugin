@@ -3,6 +3,7 @@ package com.asherbernardi.jsgfplugin;
 import static com.intellij.openapi.editor.colors.TextAttributesKey.createTextAttributesKey;
 
 import com.asherbernardi.jsgfplugin.psi.JsgfBnfTypes;
+import com.asherbernardi.jsgfplugin.psi.JsgfTypes;
 import com.intellij.lexer.Lexer;
 import com.intellij.openapi.editor.DefaultLanguageHighlighterColors;
 import com.intellij.openapi.editor.HighlighterColors;
@@ -48,21 +49,19 @@ public class JsgfSyntaxHighlighter extends SyntaxHighlighterBase {
     TERMINAL(createTextAttributesKey("Jsgf_TERMINAL", DefaultLanguageHighlighterColors.NUMBER),
         JsgfBnfTypes.TERMINAL_IDENTIFIER),
     LINE_COMMENT(createTextAttributesKey("Jsgf_LINE_COMMENT", DefaultLanguageHighlighterColors.LINE_COMMENT),
-        JsgfParserDefinition.LINE_COMMENT),
+        JsgfTypes.LINE_COMMENT),
     BLOCK_COMMENT(createTextAttributesKey("Jsgf_BLOCK_COMMENT", DefaultLanguageHighlighterColors.BLOCK_COMMENT),
-        JsgfParserDefinition.BLOCK_COMMENT),
+        JsgfTypes.BLOCK_COMMENT),
     DOC_COMMENT(createTextAttributesKey("Jsgf_DOC_COMMENT", DefaultLanguageHighlighterColors.DOC_COMMENT),
-        JsgfParserDefinition.DOC_COMMENT),
+        JsgfTypes.DOC_COMMENT),
     DOC_TAG(createTextAttributesKey("Jsgf_DOC_TAG", DefaultLanguageHighlighterColors.DOC_COMMENT_TAG)),
     STRING(createTextAttributesKey("Jsgf_STRING", DefaultLanguageHighlighterColors.STRING),
-        JsgfBnfTypes.QUOTE_OPEN,
-        JsgfBnfTypes.QUOTE_CLOSE,
+        JsgfBnfTypes.QUOTE,
         JsgfBnfTypes.STRING_TEXT),
     ID(createTextAttributesKey("Jsgf_ID", DefaultLanguageHighlighterColors.IDENTIFIER),
         JsgfBnfTypes.IDENTIFIER),
     KEYWORD(createTextAttributesKey("Jsgf_KEYWORD", DefaultLanguageHighlighterColors.KEYWORD),
         JsgfBnfTypes.GRAMMAR,
-        JsgfBnfTypes.INCLUDE,
         JsgfBnfTypes.IMPORT,
         JsgfBnfTypes.PUBLIC,
         JsgfBnfTypes.VERSION,
@@ -70,8 +69,7 @@ public class JsgfSyntaxHighlighter extends SyntaxHighlighterBase {
         JsgfBnfTypes.SEMICOLON),
     TAG(createTextAttributesKey("Jsgf_TAG", DefaultLanguageHighlighterColors.TEMPLATE_LANGUAGE_COLOR)),
     BAD_CHARACTER(createTextAttributesKey("Jsgf_BAD_CHARACTER", HighlighterColors.BAD_CHARACTER),
-        TokenType.BAD_CHARACTER,
-        JsgfBnfTypes.STRING_NL),
+        TokenType.BAD_CHARACTER),
     WEIGHT(createTextAttributesKey("Jsgf_WEIGHT", DefaultLanguageHighlighterColors.INLINE_PARAMETER_HINT_HIGHLIGHTED),
         JsgfBnfTypes.WEIGHT),
     BAD_REFERENCE(createTextAttributesKey("Jsgf_BAD_REFERENCE", CodeInsightColors.WRONG_REFERENCES_ATTRIBUTES)),

@@ -5,7 +5,7 @@ import com.intellij.psi.tree.IElementType;
 
 import static com.intellij.psi.TokenType.*;
 import static com.asherbernardi.jsgfplugin.psi.JsgfBnfTypes.*;
-import static com.asherbernardi.jsgfplugin.JsgfParserDefinition.*;
+import static com.asherbernardi.jsgfplugin.psi.JsgfTypes.*;
 
 %%
 
@@ -88,7 +88,6 @@ OTHER_PUNCTUATION = "_" | "+" | "-" | ":" | ";" | "," | "=" | "|" | "/" | \\ | "
   "V" \d+ ("."\d+)*                               { return VERSION; }
   "grammar"                                       { return GRAMMAR; }
   "import"                                        { return IMPORT; }
-  "include"                                       { return INCLUDE; }
   "public"                                        { return PUBLIC; }
   {IDENTIFIER}                                    { return IDENTIFIER; }
 }
@@ -119,8 +118,7 @@ OTHER_PUNCTUATION = "_" | "+" | "-" | ":" | ";" | "," | "=" | "|" | "/" | \\ | "
   "}"                                             { return RBRACE; }
   "["                                             { return LBRACK; }
   "]"                                             { return RBRACK; }
-  \"                                              { yybegin(STRING); return QUOTE_OPEN; }
-  "|"                                             { return OR; }
+  \"                                              { yybegin(STRING); return QUOTE; }
   "+"                                             { return PLUS; }
 }
 
@@ -132,13 +130,13 @@ OTHER_PUNCTUATION = "_" | "+" | "-" | ":" | ";" | "," | "=" | "|" | "/" | \\ | "
   ">"                                             { yyHopBack(); return RANGLE; }
   {NL}                                            { yyHopBack(); return WHITE_SPACE; }
   {WHITE_SPACE}                                   { return WHITE_SPACE; }
-  [^]                                             { return BAD_CHARACTER; }
+  [^]                                             { yyHopBack(); return BAD_CHARACTER; }
 }
 
 <STRING> {
   ( [^\"\n\r\ufeff] | \\\" )+                     { return STRING_TEXT;}
-  \"                                              { yybegin(RULE_EXPANSION); return QUOTE_CLOSE;}
-  {NL}                                            { yybegin(RULE_EXPANSION); return STRING_NL;}
+  \"                                              { yybegin(RULE_EXPANSION); return QUOTE;}
+  {NL}                                            { yybegin(RULE_EXPANSION); return WHITE_SPACE;}
   [^]                                             { yybegin(RULE_EXPANSION); return BAD_CHARACTER; }
 }
 

@@ -10,26 +10,21 @@ import com.intellij.psi.util.PsiTreeUtil;
 import static com.asherbernardi.jsgfplugin.psi.JsgfBnfTypes.*;
 import com.asherbernardi.jsgfplugin.psi.*;
 
-public class JsgfRuleReferenceImpl extends RuleReferenceMixin implements JsgfRuleReference {
+public class JsgfParenthesesGroupExpImpl extends JsgfGroupExpImpl implements JsgfParenthesesGroupExp {
 
-  public JsgfRuleReferenceImpl(@NotNull ASTNode node) {
+  public JsgfParenthesesGroupExpImpl(@NotNull ASTNode node) {
     super(node);
   }
 
+  @Override
   public void accept(@NotNull JsgfVisitor visitor) {
-    visitor.visitRuleReference(this);
+    visitor.visitParenthesesGroupExp(this);
   }
 
   @Override
   public void accept(@NotNull PsiElementVisitor visitor) {
     if (visitor instanceof JsgfVisitor) accept((JsgfVisitor)visitor);
     else super.accept(visitor);
-  }
-
-  @Override
-  @Nullable
-  public JsgfRuleReferenceName getRuleReferenceName() {
-    return PsiTreeUtil.getChildOfType(this, JsgfRuleReferenceName.class);
   }
 
 }

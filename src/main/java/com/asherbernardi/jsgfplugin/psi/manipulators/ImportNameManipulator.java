@@ -1,5 +1,6 @@
 package com.asherbernardi.jsgfplugin.psi.manipulators;
 
+import com.asherbernardi.jsgfplugin.psi.RuleNameSplit;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.AbstractElementManipulator;
 import com.intellij.util.IncorrectOperationException;
@@ -13,7 +14,21 @@ public class ImportNameManipulator extends AbstractElementManipulator<JsgfRuleIm
   @Override
   public JsgfRuleImportName handleContentChange(@NotNull JsgfRuleImportName element,
       @NotNull TextRange range, String newContent) throws IncorrectOperationException {
-    String newQualifiedName = element.getFullyQualifiedGrammarName() + "." + newContent;
+    String fqrn = element.getFQRN();
+    RuleNameSplit split = RuleNameSplit.fromFQRN(fqrn);
+    String newQualifiedName;
+    if (split.hasFQGN() && range.equals(split.getFQGNRange())) {
+      // New content is a simple grammar name
+      newQualifiedName = split.replaceSimpleGrammarName(newContent);
+    } else if (range.equals(split.getUQRNRange())) {
+      // New content is an unqualified rule name
+      if (element.isStarImport()) {
+        throw new IncorrectOperationException("Cannot rename a '*' import");
+      }
+      newQualifiedName = split.replaceUQRN(newContent);
+    } else {
+      throw new IncorrectOperationException("Wrong range: " + range + " to replace import name: " + element.getText());
+    }
     return (JsgfRuleImportName) element.setRuleName(newQualifiedName);
   }
 }

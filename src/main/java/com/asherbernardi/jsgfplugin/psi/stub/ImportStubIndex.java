@@ -1,6 +1,7 @@
 package com.asherbernardi.jsgfplugin.psi.stub;
 
 import com.asherbernardi.jsgfplugin.psi.JsgfRuleImportName;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.stubs.StringStubIndexExtension;
@@ -15,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class ImportStubIndex extends StringStubIndexExtension<JsgfRuleImportName> {
 
-  public static ImportStubIndex INSTANCE = new ImportStubIndex();
+  public static final ImportStubIndex INSTANCE = new ImportStubIndex();
 
   private ImportStubIndex() { }
 
@@ -36,6 +37,14 @@ public class ImportStubIndex extends StringStubIndexExtension<JsgfRuleImportName
     Set<JsgfRuleImportName> imports = new HashSet<>();
     for (String key : getImportNamesInFile(file)) {
       imports.addAll(INSTANCE.get(key, file.getProject(), GlobalSearchScope.fileScope(file)));
+    }
+    return imports;
+  }
+
+  public static Collection<JsgfRuleImportName> getAllImportsInProject(Project project) {
+    Set<JsgfRuleImportName> imports = new HashSet<>();
+    for (String key : INSTANCE.getAllKeys(project)) {
+      imports.addAll(INSTANCE.get(key, project, GlobalSearchScope.projectScope(project)));
     }
     return imports;
   }

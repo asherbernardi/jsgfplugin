@@ -8,7 +8,7 @@ import com.intellij.psi.PsiElement;
 public interface JsgfRuleDefinition extends PsiElement {
 
   @Nullable
-  JsgfAlternatives getAlternatives();
+  JsgfExpansion getExpansion();
 
   @NotNull
   JsgfRuleDeclaration getRuleDeclaration();

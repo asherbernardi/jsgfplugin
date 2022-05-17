@@ -5,8 +5,11 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface JsgfString extends PsiElement {
+public interface JsgfAlternativesExp extends JsgfExpansion {
 
-  String getStringText();
+  @NotNull
+  List<JsgfExpansion> getExpansionList();
+
+  List<PsiElement> getOrSymbols();
 
 }

@@ -7,7 +7,7 @@ import com.intellij.psi.PsiElement;
 
 public interface JsgfRuleImport extends PsiElement {
 
-  @NotNull
+  @Nullable
   JsgfRuleImportName getRuleImportName();
 
 }

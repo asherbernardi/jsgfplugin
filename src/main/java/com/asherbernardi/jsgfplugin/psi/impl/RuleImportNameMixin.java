@@ -1,11 +1,14 @@
 package com.asherbernardi.jsgfplugin.psi.impl;
 
-import com.asherbernardi.jsgfplugin.psi.reference.OtherFileNameReference;
+import com.asherbernardi.jsgfplugin.JsgfElementFactory;
+import com.asherbernardi.jsgfplugin.psi.reference.OtherFileRuleNameReference;
 import com.intellij.extapi.psi.StubBasedPsiElementBase;
 import com.intellij.lang.ASTNode;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.stubs.IStubElementType;
 import com.asherbernardi.jsgfplugin.psi.JsgfRuleImportName;
 import com.asherbernardi.jsgfplugin.psi.stub.ImportStub;
+import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class RuleImportNameMixin extends StubBasedPsiElementBase<ImportStub> implements
@@ -21,12 +24,13 @@ public abstract class RuleImportNameMixin extends StubBasedPsiElementBase<Import
 
   @Override
   public String toString() {
-    return "ImportName: <" + getRuleName() + ">";
+    return "ImportName: <" + getText() + ">";
   }
 
   @Override
-  @NotNull
-  public OtherFileNameReference getReference() {
-    return JsgfPsiImplInjections.getReference(this);
+  public PsiElement setRuleName(@NotNull String newName) throws IncorrectOperationException {
+    JsgfRuleImportName newImportName = JsgfElementFactory.createRuleImport(getProject(), newName);
+    getNode().replaceAllChildrenToChildrenOf(newImportName.getNode());
+    return this;
   }
 }

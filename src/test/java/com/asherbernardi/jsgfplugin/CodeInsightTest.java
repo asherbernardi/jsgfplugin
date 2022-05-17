@@ -2,6 +2,7 @@ package com.asherbernardi.jsgfplugin;
 
 import com.asherbernardi.jsgfplugin.JsgfSyntaxHighlighter.JsgfHighlightType;
 import com.asherbernardi.jsgfplugin.psi.JsgfRuleDeclarationName;
+import com.asherbernardi.jsgfplugin.psi.JsgfRuleReferenceName;
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.util.TextRange;
@@ -34,7 +35,8 @@ public class CodeInsightTest extends BasePlatformTestCase {
   public void testReferenceBroken() {
     myFixture.configureByFile("CodeCompletionTest.jsgf");
     PsiElement element = myFixture.getFile().findElementAt(myFixture.getCaretOffset()).getPrevSibling();
-    assertNull(element.getReference().resolve());
+    assertInstanceOf(element, JsgfRuleReferenceName.class);
+    assertNull(((JsgfRuleReferenceName) element).getReferencePair().getRuleReference().resolve());
   }
 
   public void testReferences() {
@@ -53,7 +55,7 @@ public class CodeInsightTest extends BasePlatformTestCase {
       assertEquals("reference to <other2> failed", "other2", resolve.getName());
       // but the highlighting should be an error
       assertTrue(myFixture.doHighlighting(HighlightSeverity.ERROR).stream()
-          .anyMatch(h -> new TextRange(h.startOffset, h.endOffset).equals(reference.getElement().getNode().getTextRange())
+          .anyMatch(h -> new TextRange(h.startOffset, h.endOffset).equals(reference.getAbsoluteRange())
               && h.forcedTextAttributesKey == JsgfHighlightType.BAD_REFERENCE.getTextAttributesKey()
               && h.getDescription().equals("<other2> does not have public access in ReferenceTestOther.jsgf")));
     }

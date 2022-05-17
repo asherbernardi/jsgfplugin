@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class RuleDeclarationStubElementType extends IStubElementType<RuleDeclarationStub, JsgfRuleDeclarationName> {
 
-  public static String ID = "jsgf.rule";
+  public static final String ID = "jsgf.rule";
 
   public RuleDeclarationStubElementType() {
     super("RULE", JsgfLanguage.INSTANCE);
@@ -27,7 +27,7 @@ public class RuleDeclarationStubElementType extends IStubElementType<RuleDeclara
   @Override
   public @NotNull RuleDeclarationStub createStub(@NotNull JsgfRuleDeclarationName psi,
       StubElement<?> parentStub) {
-    return new RuleDeclarationStubImpl(parentStub, psi.getRuleName(), psi.isPublicRule());
+    return new RuleDeclarationStubImpl(parentStub, psi.getText(), psi.isPublicRule());
   }
 
   @Override
@@ -45,9 +45,9 @@ public class RuleDeclarationStubElementType extends IStubElementType<RuleDeclara
   @Override
   public @NotNull RuleDeclarationStub deserialize(@NotNull StubInputStream dataStream,
       StubElement parentStub) throws IOException {
-    String ruleName = dataStream.readNameString();
+    String ruleText = dataStream.readNameString();
     boolean isPublicRule = dataStream.readBoolean();
-    return new RuleDeclarationStubImpl(parentStub, ruleName, isPublicRule);
+    return new RuleDeclarationStubImpl(parentStub, ruleText, isPublicRule);
   }
 
   @Override

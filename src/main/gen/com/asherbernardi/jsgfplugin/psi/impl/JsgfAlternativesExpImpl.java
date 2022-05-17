@@ -10,14 +10,14 @@ import com.intellij.psi.util.PsiTreeUtil;
 import static com.asherbernardi.jsgfplugin.psi.JsgfBnfTypes.*;
 import com.asherbernardi.jsgfplugin.psi.*;
 
-public class JsgfGroupImpl extends GroupMixin implements JsgfGroup {
+public class JsgfAlternativesExpImpl extends AlternativesMixin implements JsgfAlternativesExp {
 
-  public JsgfGroupImpl(@NotNull ASTNode node) {
+  public JsgfAlternativesExpImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull JsgfVisitor visitor) {
-    visitor.visitGroup(this);
+    visitor.visitAlternativesExp(this);
   }
 
   @Override
@@ -27,14 +27,14 @@ public class JsgfGroupImpl extends GroupMixin implements JsgfGroup {
   }
 
   @Override
-  @Nullable
-  public JsgfAlternatives getAlternatives() {
-    return PsiTreeUtil.getChildOfType(this, JsgfAlternatives.class);
+  @NotNull
+  public List<JsgfExpansion> getExpansionList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, JsgfExpansion.class);
   }
 
   @Override
-  public boolean isOptionalGroup() {
-    return JsgfPsiImplInjections.isOptionalGroup(this);
+  public List<PsiElement> getOrSymbols() {
+    return JsgfPsiImplInjections.getOrSymbols(this);
   }
 
 }

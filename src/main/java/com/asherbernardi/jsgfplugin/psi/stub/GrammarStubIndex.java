@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class GrammarStubIndex extends StringStubIndexExtension<JsgfGrammarName> {
 
-  public static GrammarStubIndex INSTANCE = new GrammarStubIndex();
+  public static final GrammarStubIndex INSTANCE = new GrammarStubIndex();
 
   private GrammarStubIndex() { }
 
@@ -19,8 +19,8 @@ public class GrammarStubIndex extends StringStubIndexExtension<JsgfGrammarName> 
     return JsgfStubElementTypes.GRAMMAR_INDEX_KEY;
   }
 
-  public static Collection<JsgfGrammarName> getGrammarsByName(@NotNull String grammarName,
+  public static Collection<JsgfGrammarName> getGrammarsByName(@NotNull String fqgn,
       @NotNull final Project project, @NotNull final GlobalSearchScope scope) {
-    return INSTANCE.get(grammarName, project, scope);
+    return INSTANCE.get(fqgn, project, scope);
   }
 }

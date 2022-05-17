@@ -1,6 +1,6 @@
 package com.asherbernardi.jsgfplugin.psi.impl;
 
-import com.asherbernardi.jsgfplugin.psi.reference.RuleReferenceReference;
+import com.asherbernardi.jsgfplugin.psi.reference.RuleNameReference;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.intellij.lang.ASTNode;
 import com.asherbernardi.jsgfplugin.psi.JsgfRuleReferenceName;
@@ -18,11 +18,5 @@ public abstract class RuleReferenceNameMixin extends ASTWrapperPsiElement implem
   @Override
   public String toString() {
     return "RuleReferenceName: <" + getRuleName() + ">";
-  }
-
-  @NotNull
-  @Override
-  public RuleReferenceReference getReference() {
-    return JsgfPsiImplInjections.getReference(this);
   }
 }

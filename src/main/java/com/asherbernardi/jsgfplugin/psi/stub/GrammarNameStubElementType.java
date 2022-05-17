@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class GrammarNameStubElementType extends IStubElementType<GrammarNameStub, JsgfGrammarName> {
 
-  public static String ID = "jsgf.grammar";
+  public static final String ID = "jsgf.grammar";
 
   public GrammarNameStubElementType() {
     super("GRAMMAR", JsgfLanguage.INSTANCE);
@@ -27,7 +27,7 @@ public class GrammarNameStubElementType extends IStubElementType<GrammarNameStub
   @Override
   public @NotNull GrammarNameStub createStub(@NotNull JsgfGrammarName psi,
       StubElement<?> parentStub) {
-    return new GrammarNameStubImpl(parentStub, psi.getName());
+    return new GrammarNameStubImpl(parentStub, psi.getFQGN());
   }
 
   @Override
@@ -38,7 +38,7 @@ public class GrammarNameStubElementType extends IStubElementType<GrammarNameStub
   @Override
   public void serialize(@NotNull GrammarNameStub stub, @NotNull StubOutputStream dataStream)
       throws IOException {
-    dataStream.writeName(stub.getName());
+    dataStream.writeName(stub.getFQGN());
   }
 
   @Override
@@ -50,7 +50,7 @@ public class GrammarNameStubElementType extends IStubElementType<GrammarNameStub
 
   @Override
   public void indexStub(@NotNull GrammarNameStub stub, @NotNull IndexSink sink) {
-    sink.occurrence(JsgfStubElementTypes.GRAMMAR_INDEX_KEY, stub.getName());
+    sink.occurrence(JsgfStubElementTypes.GRAMMAR_INDEX_KEY, stub.getFQGN());
   }
 
   @SuppressWarnings("unused")

@@ -10,26 +10,21 @@ import com.intellij.psi.util.PsiTreeUtil;
 import static com.asherbernardi.jsgfplugin.psi.JsgfBnfTypes.*;
 import com.asherbernardi.jsgfplugin.psi.*;
 
-public class JsgfTerminalImpl extends TerminalMixin implements JsgfTerminal {
+public class JsgfUnweightedAlternativesExpImpl extends JsgfAlternativesExpImpl implements JsgfUnweightedAlternativesExp {
 
-  public JsgfTerminalImpl(@NotNull ASTNode node) {
+  public JsgfUnweightedAlternativesExpImpl(@NotNull ASTNode node) {
     super(node);
   }
 
+  @Override
   public void accept(@NotNull JsgfVisitor visitor) {
-    visitor.visitTerminal(this);
+    visitor.visitUnweightedAlternativesExp(this);
   }
 
   @Override
   public void accept(@NotNull PsiElementVisitor visitor) {
     if (visitor instanceof JsgfVisitor) accept((JsgfVisitor)visitor);
     else super.accept(visitor);
-  }
-
-  @Override
-  @Nullable
-  public PsiElement getIdentifier() {
-    return findChildByType(IDENTIFIER);
   }
 
 }

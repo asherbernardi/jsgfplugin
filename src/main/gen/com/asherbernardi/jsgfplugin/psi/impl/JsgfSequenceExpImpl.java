@@ -10,14 +10,14 @@ import com.intellij.psi.util.PsiTreeUtil;
 import static com.asherbernardi.jsgfplugin.psi.JsgfBnfTypes.*;
 import com.asherbernardi.jsgfplugin.psi.*;
 
-public class JsgfAlternativesImpl extends AlternativesMixin implements JsgfAlternatives {
+public class JsgfSequenceExpImpl extends SequenceMixin implements JsgfSequenceExp {
 
-  public JsgfAlternativesImpl(@NotNull ASTNode node) {
+  public JsgfSequenceExpImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull JsgfVisitor visitor) {
-    visitor.visitAlternatives(this);
+    visitor.visitSequenceExp(this);
   }
 
   @Override
@@ -28,13 +28,8 @@ public class JsgfAlternativesImpl extends AlternativesMixin implements JsgfAlter
 
   @Override
   @NotNull
-  public List<JsgfSequence> getSequenceList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, JsgfSequence.class);
-  }
-
-  @Override
-  public List<PsiElement> getOrSymbols() {
-    return JsgfPsiImplInjections.getOrSymbols(this);
+  public List<JsgfExpansion> getExpansionList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, JsgfExpansion.class);
   }
 
 }

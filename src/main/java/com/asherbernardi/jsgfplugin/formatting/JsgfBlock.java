@@ -3,29 +3,35 @@ package com.asherbernardi.jsgfplugin.formatting;
 import com.intellij.formatting.Alignment;
 import com.intellij.formatting.Block;
 import com.intellij.formatting.Indent;
+import com.intellij.formatting.Indent.Type;
 import com.intellij.formatting.Spacing;
 import com.intellij.formatting.SpacingBuilder;
 import com.intellij.lang.ASTNode;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.codeStyle.CodeStyleSettings;
 import com.intellij.psi.formatter.common.AbstractBlock;
 import com.intellij.psi.tree.IElementType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class JsgfBlock extends AbstractBlock {
+public abstract class JsgfBlock<E extends PsiElement> extends AbstractBlock {
 
   private final SpacingBuilder spacingBuilder;
   private final CodeStyleSettings settings;
+  private final E element;
+  protected static final Indent NORMAL_INDENT = Indent.getIndent(Type.NORMAL, false, true);
+  protected static final Indent NONE_INDENT = Indent.getIndent(Type.NONE, false, true);
 
-  protected JsgfBlock(@NotNull ASTNode node, SpacingBuilder spacingBuilder,
+  protected JsgfBlock(@NotNull E element, SpacingBuilder spacingBuilder,
       CodeStyleSettings settings, Alignment alignment) {
-    super(node, null, alignment);
+    super(element.getNode(), null, alignment);
     this.spacingBuilder = spacingBuilder;
     this.settings = settings;
+    this.element = element;
   }
 
-  protected JsgfBlock(@NotNull ASTNode node, SpacingBuilder spacingBuilder, CodeStyleSettings settings) {
-    this(node, spacingBuilder, settings, null);
+  protected JsgfBlock(@NotNull E element, SpacingBuilder spacingBuilder, CodeStyleSettings settings) {
+    this(element, spacingBuilder, settings, null);
   }
 
   public SpacingBuilder getSpacingBuilder() {
@@ -34,6 +40,10 @@ public abstract class JsgfBlock extends AbstractBlock {
 
   public CodeStyleSettings getSettings() {
     return settings;
+  }
+
+  public E getElement() {
+    return element;
   }
 
   @Override
@@ -70,11 +80,23 @@ public abstract class JsgfBlock extends AbstractBlock {
     return Indent.getNoneIndent();
   }
 
+  protected Indent normalIndent() {
+    return NORMAL_INDENT;
+  }
+
+  protected Indent noneIndent() {
+    return NONE_INDENT;
+  }
+
   @Override
   public abstract Indent getIndent();
 
-  protected Block createSimpleBlock(ASTNode child, Indent indent) {
+  protected Block createSimpleBlock(PsiElement child, Indent indent) {
     return FormattingUtil.createSimpleBlock(child, indent, getSpacingBuilder());
   }
 
+  @Override
+  public boolean isLeaf() {
+    return myNode.getFirstChildNode() == null;
+  }
 }

@@ -6,10 +6,11 @@ import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.StubBasedPsiElement;
 import com.asherbernardi.jsgfplugin.psi.stub.ImportStub;
-import com.asherbernardi.jsgfplugin.psi.reference.OtherFileNameReference;
+import com.asherbernardi.jsgfplugin.psi.reference.OtherFileReferencePair;
+import com.intellij.psi.PsiReference;
 import com.intellij.psi.search.SearchScope;
 
-public interface JsgfRuleImportName extends ImportName, StubBasedPsiElement<ImportStub> {
+public interface JsgfRuleImportName extends RuleName, StubBasedPsiElement<ImportStub> {
 
   boolean isStarImport();
 
@@ -22,9 +23,13 @@ public interface JsgfRuleImportName extends ImportName, StubBasedPsiElement<Impo
   String getPackageName();
 
   @NotNull
-  OtherFileNameReference getReference();
+  PsiReference[] getReferences();
+
+  OtherFileReferencePair getReferencePair();
 
   @NotNull
   SearchScope getUseScope();
+
+  String getFullyQualifiedRuleName();
 
 }

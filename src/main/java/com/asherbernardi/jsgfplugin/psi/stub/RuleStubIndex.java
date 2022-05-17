@@ -25,10 +25,9 @@ public class RuleStubIndex extends StringStubIndexExtension<JsgfRuleDeclarationN
     return JsgfStubElementTypes.RULE_INDEX_KEY;
   }
 
-  @NotNull
-  public static Collection<JsgfRuleDeclarationName> getRulesByName(@NotNull String ruleName,
+  public static Collection<JsgfRuleDeclarationName> getRulesByQualifiedName(@NotNull String ruleText,
       @NotNull final Project project, @NotNull final GlobalSearchScope scope) {
-    return INSTANCE.get(ruleName, project, scope);
+    return INSTANCE.get(ruleText, project, scope);
   }
 
   @NotNull

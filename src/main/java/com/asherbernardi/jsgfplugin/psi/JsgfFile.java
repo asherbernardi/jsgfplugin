@@ -7,6 +7,7 @@ import com.intellij.openapi.fileTypes.FileType;
 import com.intellij.psi.FileViewProvider;
 import com.intellij.psi.util.PsiTreeUtil;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -51,14 +52,18 @@ public class JsgfFile extends PsiFileBase {
     return PsiTreeUtil.getChildOfType(this, JsgfHeader.class);
   }
 
+  @NotNull
   public List<JsgfRuleImportName> getImportNames() {
-    return getImportStatements().stream().map(JsgfImportStatement::getRuleImportName).collect(Collectors.toList());
+    return getImportStatements().stream().map(JsgfImportStatement::getRuleImportName).collect(
+        Collectors.toList());
   }
 
+  @NotNull
   public List<JsgfImportStatement> getImportStatements() {
     return PsiTreeUtil.getChildrenOfTypeAsList(this, JsgfImportStatement.class);
   }
 
+  @NotNull
   public List<JsgfRuleDefinition> getRuleDefinitions() {
     return PsiTreeUtil.getChildrenOfTypeAsList(this, JsgfRuleDefinition.class);
   }

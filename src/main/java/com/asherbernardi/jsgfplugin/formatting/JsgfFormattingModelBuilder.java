@@ -1,8 +1,10 @@
 package com.asherbernardi.jsgfplugin.formatting;
 
 import static com.asherbernardi.jsgfplugin.psi.JsgfBnfTypes.*;
-import static com.asherbernardi.jsgfplugin.JsgfParserDefinition.*;
+import static com.asherbernardi.jsgfplugin.psi.JsgfTypes.*;
 
+import com.asherbernardi.jsgfplugin.psi.JsgfExpansion;
+import com.asherbernardi.jsgfplugin.psi.JsgfFile;
 import com.intellij.formatting.Block;
 import com.intellij.formatting.FormattingContext;
 import com.intellij.formatting.FormattingModel;
@@ -15,11 +17,11 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.codeStyle.CodeStyleSettings;
 import com.intellij.psi.tree.TokenSet;
 import com.asherbernardi.jsgfplugin.JsgfLanguage;
-import com.asherbernardi.jsgfplugin.psi.JsgfAlternatives;
+import com.asherbernardi.jsgfplugin.psi.JsgfAlternativesExp;
 import com.asherbernardi.jsgfplugin.psi.JsgfBnfTypes;
-import com.asherbernardi.jsgfplugin.psi.JsgfGroup;
+import com.asherbernardi.jsgfplugin.psi.JsgfGroupExp;
 import com.asherbernardi.jsgfplugin.psi.JsgfRuleDefinition;
-import com.asherbernardi.jsgfplugin.psi.JsgfSequence;
+import com.asherbernardi.jsgfplugin.psi.JsgfSequenceExp;
 import com.asherbernardi.jsgfplugin.psi.JsgfTag;
 import java.util.Collections;
 import org.jetbrains.annotations.NotNull;
@@ -27,18 +29,18 @@ import org.jetbrains.annotations.NotNull;
 public class JsgfFormattingModelBuilder implements FormattingModelBuilder {
 
   private SpacingBuilder createSpacingBuilder(CodeStyleSettings settings) {
-    return new ASTGroupSpacingBuilder(settings, JsgfLanguage.INSTANCE)
+    return new SpacingBuilder(settings, JsgfLanguage.INSTANCE)
         .around(TokenSet.create(EQUALS))
         .spaceIf(settings.getCommonSettings(JsgfLanguage.INSTANCE).SPACE_AROUND_ASSIGNMENT_OPERATORS)
         .around(TokenSet.create(OR))
         .spaceIf(settings.getCommonSettings(JsgfLanguage.INSTANCE).SPACE_AROUND_LOGICAL_OPERATORS)
         .between(
-            TokenSet.create(RULE_REFERENCE, TERMINAL, STRING, GROUP),
+            TokenSet.create(RULE_REFERENCE_EXP, TERMINAL_EXP, STRING_EXP, PARENTHESES_GROUP_EXP, OPTIONAL_GROUP_EXP),
             TokenSet.create(STAR, PLUS))
         .spaceIf(settings.getCommonSettings(JsgfLanguage.INSTANCE).SPACE_AROUND_UNARY_OPERATOR)
         .between(
-            TokenSet.create(RULE_REFERENCE, TERMINAL, STRING, GROUP),
-            TokenSet.create(RULE_REFERENCE, TERMINAL, STRING, GROUP))
+            TokenSet.create(RULE_REFERENCE_EXP, TERMINAL_EXP, STRING_EXP, PARENTHESES_GROUP_EXP, OPTIONAL_GROUP_EXP),
+            TokenSet.create(RULE_REFERENCE_EXP, TERMINAL_EXP, STRING_EXP, PARENTHESES_GROUP_EXP, OPTIONAL_GROUP_EXP))
         .spaces(1)
         .between(
             TokenSet.create(LPAREN, LBRACK),
@@ -93,31 +95,25 @@ public class JsgfFormattingModelBuilder implements FormattingModelBuilder {
     PsiElement element = formattingContext.getPsiElement();
     CodeStyleSettings settings = formattingContext.getCodeStyleSettings();
     // Whole file
-    if (element instanceof PsiFile
-        || element.getNode().getElementType() == JsgfBnfTypes.GRAMMAR) {
-      block = new JsgfGrammarBlock(element.getNode(), createSpacingBuilder(settings), settings);
+    if (element instanceof JsgfFile) {
+      block = new WholeFileBlock((JsgfFile) element, createSpacingBuilder(settings), settings);
     }
     // Rule declaration
     else if (element instanceof JsgfRuleDefinition) {
-      block = new RuleDefinitionBlock(element.getNode(), createSpacingBuilder(settings), settings);
+      block = new RuleDefinitionBlock((JsgfRuleDefinition) element, createSpacingBuilder(settings), settings);
     }
-    // Alternatives
-    else if (element instanceof JsgfAlternatives || element instanceof JsgfSequence) {
-      block = new LineGroupBlock(Collections.singletonList(element.getNode()),
-          createSpacingBuilder(settings), settings,
+    // Expansions
+    else if (element instanceof JsgfExpansion) {
+      block = new ExpansionBlock((JsgfExpansion) element, createSpacingBuilder(settings), settings,
           Indent.getNoneIndent());
-    }
-    // Group
-    else if (element instanceof JsgfGroup) {
-      block = new GroupBlock(element.getNode(), createSpacingBuilder(settings), settings, false);
     }
     // Tag
     else if (element instanceof JsgfTag) {
-      block = new TagBlock(element.getNode(), createSpacingBuilder(settings), settings);
+      block = new TagBlock((JsgfTag) element, createSpacingBuilder(settings), settings);
     }
     // Other
     else {
-      block = new SimpleBlock(element.getNode(), createSpacingBuilder(settings));
+      block = FormattingUtil.createSimpleBlock(element, Indent.getNoneIndent(), createSpacingBuilder(settings));
     }
     return FormattingModelProvider.
         createFormattingModelForPsiFile(formattingContext.getContainingFile(),

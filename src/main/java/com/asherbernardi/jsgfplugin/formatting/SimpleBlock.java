@@ -5,6 +5,7 @@ import com.intellij.formatting.Indent;
 import com.intellij.formatting.Spacing;
 import com.intellij.formatting.SpacingBuilder;
 import com.intellij.lang.ASTNode;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.TokenType;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -13,36 +14,35 @@ import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class SimpleBlock extends JsgfBlock {
+public class SimpleBlock extends JsgfBlock<PsiElement> {
 
-  protected SimpleBlock(@NotNull ASTNode node, SpacingBuilder spacingBuilder) {
-    super(node, spacingBuilder, null);
+  private final Indent indent;
+
+  protected SimpleBlock(@NotNull PsiElement element, SpacingBuilder spacingBuilder, Indent indent) {
+    super(element, spacingBuilder, null);
+    this.indent = indent;
   }
 
   @Override
   protected List<Block> buildChildren() {
     List<Block> blocks = new ArrayList<>();
-    ASTNode child = myNode.getFirstChildNode();
-    while (child != null) {
-      if (child.getTextLength() != 0) {
-        if (child.getElementType() != TokenType.WHITE_SPACE) {
-          blocks.add(createSimpleBlock(child, Indent.getNoneIndent()));
-        }
+    for (PsiElement child : FormattingUtil.iterableOfChildren(getElement())) {
+      if (!(child instanceof PsiWhiteSpace)) {
+        blocks.add(createSimpleBlock(child, noneIndent()));
       }
-      child = child.getTreeNext();
     }
     return blocks;
   }
 
   @Override
   public Indent getIndent() {
-    return Indent.getNoneIndent();
+    return indent;
   }
 
   @Override
   public @Nullable Spacing getSpacing(@Nullable Block child1, @NotNull Block child2) {
     if (child2 instanceof TagBlock) {
-      if (PsiTreeUtil.findChildOfType(((TagBlock) child2).getNode().getPsi(),
+      if (PsiTreeUtil.findChildOfType(((TagBlock) child2).getElement(),
           PsiWhiteSpace.class) != null) {
         return Spacing.createSpacing(1, 1, 0, true, 0);
       } else {
@@ -50,10 +50,5 @@ public class SimpleBlock extends JsgfBlock {
       }
     }
     return super.getSpacing(child1, child2);
-  }
-
-  @Override
-  public boolean isLeaf() {
-    return myNode.getFirstChildNode() == null;
   }
 }

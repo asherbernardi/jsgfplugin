@@ -2,6 +2,7 @@ package com.asherbernardi.jsgfplugin;
 
 import com.asherbernardi.jsgfplugin.JsgfSyntaxHighlighter.JsgfHighlightType;
 import com.asherbernardi.jsgfplugin.psi.JsgfTag;
+import com.asherbernardi.jsgfplugin.psi.JsgfTypes;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.annotation.HighlightSeverity;
@@ -19,13 +20,8 @@ import org.jetbrains.annotations.NotNull;
 public class JsgfAnnotator implements Annotator {
   @Override
   public void annotate(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
-//    // Change syntax color of terminal symbols
-//    if (element instanceof JsgfTerminal) {
-//      holder.newSilentAnnotation(HighlightSeverity.INFORMATION).range(element)
-//          .textAttributes(JsgfHighlightType.TERMINAL.getTextAttributesKey()).create();
-//    }
     // Annotate documentation comments
-    if (element.getNode().getElementType() == JsgfParserDefinition.DOC_COMMENT) {
+    if (element.getNode().getElementType() == JsgfTypes.DOC_COMMENT) {
       int fileOffset = element.getTextOffset();
       String text = element.getText();
       String line;

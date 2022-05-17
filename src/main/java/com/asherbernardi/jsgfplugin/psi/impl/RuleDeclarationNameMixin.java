@@ -1,15 +1,19 @@
 package com.asherbernardi.jsgfplugin.psi.impl;
 
+import com.asherbernardi.jsgfplugin.JsgfIcons;
+import com.asherbernardi.jsgfplugin.psi.JsgfRuleDeclarationName;
 import com.intellij.extapi.psi.StubBasedPsiElementBase;
 import com.intellij.lang.ASTNode;
 import com.intellij.psi.PsiNameIdentifierOwner;
 import com.intellij.psi.stubs.IStubElementType;
-import com.asherbernardi.jsgfplugin.psi.RuleDeclarationName;
 import com.asherbernardi.jsgfplugin.psi.stub.RuleDeclarationStub;
+import com.intellij.ui.IconManager;
+import com.intellij.util.PlatformIcons;
+import javax.swing.Icon;
 import org.jetbrains.annotations.NotNull;
 
 public abstract class RuleDeclarationNameMixin extends StubBasedPsiElementBase<RuleDeclarationStub>
-    implements RuleDeclarationName, PsiNameIdentifierOwner {
+    implements JsgfRuleDeclarationName, PsiNameIdentifierOwner {
 
   public RuleDeclarationNameMixin(@NotNull ASTNode node) {
     super(node);
@@ -20,8 +24,22 @@ public abstract class RuleDeclarationNameMixin extends StubBasedPsiElementBase<R
     super(stub, nodeType);
   }
 
+  /**
+   * This is the icon which gets called when searching for symbols
+   * @param flags unused...
+   * @return an icon
+   */
+  @NotNull
+  @SuppressWarnings("unused")
+  static Icon getElementIcon(JsgfRuleDeclarationName ruleDeclarationName, int flags) {
+    if (ruleDeclarationName.isPublicRule()) {
+      return IconManager.getInstance().createRowIcon(JsgfIcons.FILE, PlatformIcons.PUBLIC_ICON);
+    }
+    return JsgfIcons.FILE;
+  }
+
   @Override
   public String toString() {
-    return "RuleDeclarationName: <" + getRuleName() + ">";
+    return "RuleDeclarationName: <" + getText() + ">";
   }
 }

@@ -2,10 +2,10 @@ package com.asherbernardi.jsgfplugin.psi.impl;
 
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.intellij.lang.ASTNode;
-import com.asherbernardi.jsgfplugin.psi.JsgfString;
+import com.asherbernardi.jsgfplugin.psi.JsgfStringExp;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class StringMixin extends ASTWrapperPsiElement implements JsgfString {
+public abstract class StringMixin extends ASTWrapperPsiElement implements JsgfStringExp {
 
   public StringMixin(@NotNull ASTNode node) {
     super(node);

@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class ImportStubElementType extends IStubElementType<ImportStub, JsgfRuleImportName> {
 
-  public static String ID = "jsgf.import";
+  public static final String ID = "jsgf.import";
 
   public ImportStubElementType() {
     super("IMPORT", JsgfLanguage.INSTANCE);
@@ -27,7 +27,7 @@ public class ImportStubElementType extends IStubElementType<ImportStub, JsgfRule
   @Override
   public @NotNull ImportStub createStub(@NotNull JsgfRuleImportName psi,
       StubElement<?> parentStub) {
-    return new ImportStubImpl(parentStub, psi.getRuleName());
+    return new ImportStubImpl(parentStub, psi.getFQRN());
   }
 
   @Override
@@ -44,8 +44,8 @@ public class ImportStubElementType extends IStubElementType<ImportStub, JsgfRule
   @Override
   public @NotNull ImportStub deserialize(@NotNull StubInputStream dataStream,
       StubElement parentStub) throws IOException {
-    String ruleName = dataStream.readNameString();
-    return new ImportStubImpl(parentStub, ruleName);
+    String fqrn = dataStream.readNameString();
+    return new ImportStubImpl(parentStub, fqrn);
   }
 
   @Override

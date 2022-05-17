@@ -9,13 +9,13 @@ import com.asherbernardi.jsgfplugin.psi.stub.RuleDeclarationStub;
 import com.intellij.navigation.ItemPresentation;
 import com.intellij.psi.search.SearchScope;
 import com.intellij.util.IncorrectOperationException;
-import javax.swing.Icon;
 
-public interface JsgfRuleDeclarationName extends RuleDeclarationName, StubBasedPsiElement<RuleDeclarationStub> {
+public interface JsgfRuleDeclarationName extends RuleName, StubBasedPsiElement<RuleDeclarationStub> {
 
   @NotNull
   PsiElement getRuleNameIdentifier();
 
+  @NotNull
   String getName();
 
   PsiElement setName(@NotNull String name) throws IncorrectOperationException;
@@ -23,9 +23,6 @@ public interface JsgfRuleDeclarationName extends RuleDeclarationName, StubBasedP
   boolean isPublicRule();
 
   ItemPresentation getPresentation();
-
-  @NotNull
-  Icon getElementIcon(int flags);
 
   @Nullable
   PsiElement getNameIdentifier();

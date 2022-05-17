@@ -33,11 +33,6 @@ public class JsgfImportStatementImpl extends ImportStatementMixin implements Jsg
   }
 
   @Override
-  public boolean isInclude() {
-    return JsgfPsiImplInjections.isInclude(this);
-  }
-
-  @Override
   public JsgfRuleImportName getRuleImportName() {
     return JsgfPsiImplInjections.getRuleImportName(this);
   }

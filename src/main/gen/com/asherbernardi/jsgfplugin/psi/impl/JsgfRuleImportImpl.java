@@ -27,9 +27,9 @@ public class JsgfRuleImportImpl extends RuleImportMixin implements JsgfRuleImpor
   }
 
   @Override
-  @NotNull
+  @Nullable
   public JsgfRuleImportName getRuleImportName() {
-    return notNullChild(PsiTreeUtil.getChildOfType(this, JsgfRuleImportName.class));
+    return PsiTreeUtil.getChildOfType(this, JsgfRuleImportName.class);
   }
 
 }

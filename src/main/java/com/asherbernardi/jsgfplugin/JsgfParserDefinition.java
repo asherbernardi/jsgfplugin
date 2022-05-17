@@ -4,6 +4,7 @@ import com.asherbernardi.jsgfplugin.parser.JsgfBnfParser;
 import com.asherbernardi.jsgfplugin.psi.JsgfBnfTypes;
 import com.asherbernardi.jsgfplugin.psi.JsgfFile;
 import com.asherbernardi.jsgfplugin.psi.JsgfTokenType;
+import com.asherbernardi.jsgfplugin.psi.JsgfTypes;
 import com.asherbernardi.jsgfplugin.psi.stub.JsgfStubElementTypes;
 import com.intellij.lang.ASTNode;
 import com.intellij.lang.ParserDefinition;
@@ -23,9 +24,6 @@ import org.jetbrains.annotations.NotNull;
  * @author asherbernardi
  */
 public class JsgfParserDefinition implements ParserDefinition {
-  public static final IElementType LINE_COMMENT = new JsgfTokenType("Line comment");
-  public static final IElementType DOC_COMMENT = new JsgfTokenType("Documentation comment");
-  public static final IElementType BLOCK_COMMENT = new JsgfTokenType("Block comment");
 
   @NotNull
   @Override
@@ -36,13 +34,13 @@ public class JsgfParserDefinition implements ParserDefinition {
   @NotNull
   @Override
   public TokenSet getCommentTokens() {
-    return TokenSet.create(LINE_COMMENT, DOC_COMMENT, BLOCK_COMMENT);
+    return JsgfTypes.COMMENTS;
   }
 
   @NotNull
   @Override
   public TokenSet getStringLiteralElements() {
-    return TokenSet.create(JsgfBnfTypes.STRING);
+    return JsgfTypes.STRINGS;
   }
 
   @NotNull

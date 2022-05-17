@@ -15,6 +15,7 @@
       implementationClass="com.asherbernardi.jsgfplugin.JsgfParserDefinition"/>
     <lang.syntaxHighlighterFactory language="JSGF"
       implementationClass="com.asherbernardi.jsgfplugin.JsgfSyntaxHighlighterFactory"/>
+    <highlightRangeExtension implementation="com.asherbernardi.jsgfplugin.JsgfHighlightRangeExtension"/>
     <colorSettingsPage implementation="com.asherbernardi.jsgfplugin.JsgfColorSettingsPage"/>
     <annotator language="JSGF" implementationClass="com.asherbernardi.jsgfplugin.JsgfErrorAnnotator"/>
     <annotator language="JSGF" implementationClass="com.asherbernardi.jsgfplugin.JsgfAnnotator"/>
@@ -25,7 +26,7 @@
     <lang.refactoringSupport language="JSGF" implementationClass="com.asherbernardi.jsgfplugin.JsgfRefactoringSupportProvider"/>
     <lang.findUsagesProvider language="JSGF"
       implementationClass="com.asherbernardi.jsgfplugin.JsgfFindUsagesProvider"/>
-<!--language should be included here, even though it says it is a bug. Otherwise, it doesn't work-->
+    <referencesSearch implementation="com.asherbernardi.jsgfplugin.JsgfGrammarReferencesSearch"/>
     <gotoSymbolContributor
       implementation="com.asherbernardi.jsgfplugin.JsgfChooseByNameContributor"/>
     <lang.psiStructureViewFactory language="JSGF"

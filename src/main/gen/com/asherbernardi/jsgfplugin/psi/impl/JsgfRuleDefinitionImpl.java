@@ -28,8 +28,8 @@ public class JsgfRuleDefinitionImpl extends RuleDefinitionMixin implements JsgfR
 
   @Override
   @Nullable
-  public JsgfAlternatives getAlternatives() {
-    return PsiTreeUtil.getChildOfType(this, JsgfAlternatives.class);
+  public JsgfExpansion getExpansion() {
+    return PsiTreeUtil.getChildOfType(this, JsgfExpansion.class);
   }
 
   @Override

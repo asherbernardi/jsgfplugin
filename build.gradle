@@ -1,10 +1,10 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij' version '1.3.1'
+    id 'org.jetbrains.intellij' version '1.5.2'
 }
 
 group 'com.asherbernardi'
-version '2.1.1'
+version '2.2.0'
 
 patchPluginXml {
     pluginDescription.set('''
@@ -24,9 +24,10 @@ patchPluginXml {
 </ul>''')
     changeNotes.set('''
 <ul>
-    <li>New version 213.*
-    <li>Improved quote matcher
-    <li>Warnings for unused rules
+    <li>Support new Idea version 221.*
+    <li>Improved parsing and formatting
+    <li>Reference resolution for grammar names
+    <li>Improved file name resolution for imports
 </ul>
 ''')
     sinceBuild.set("203")
@@ -54,7 +55,7 @@ test {
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
-    version.set('2021.3')
+    version.set('2022.1')
     downloadSources = true
 }
 

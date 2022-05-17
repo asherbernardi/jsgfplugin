@@ -5,11 +5,6 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface JsgfAlternatives extends PsiElement {
-
-  @NotNull
-  List<JsgfSequence> getSequenceList();
-
-  List<PsiElement> getOrSymbols();
+public interface JsgfParenthesesGroupExp extends JsgfGroupExp {
 
 }

@@ -12,7 +12,6 @@ import com.asherbernardi.jsgfplugin.psi.*;
 import com.intellij.navigation.ItemPresentation;
 import com.intellij.psi.search.SearchScope;
 import com.intellij.util.IncorrectOperationException;
-import javax.swing.Icon;
 import com.asherbernardi.jsgfplugin.psi.stub.RuleDeclarationStub;
 import com.intellij.psi.stubs.IStubElementType;
 
@@ -43,6 +42,7 @@ public class JsgfRuleDeclarationNameImpl extends RuleDeclarationNameMixin implem
   }
 
   @Override
+  @NotNull
   public String getName() {
     return JsgfPsiImplInjections.getName(this);
   }
@@ -60,12 +60,6 @@ public class JsgfRuleDeclarationNameImpl extends RuleDeclarationNameMixin implem
   @Override
   public ItemPresentation getPresentation() {
     return JsgfPsiImplInjections.getPresentation(this);
-  }
-
-  @Override
-  @NotNull
-  public Icon getElementIcon(int flags) {
-    return JsgfPsiImplInjections.getElementIcon(this, flags);
   }
 
   @Override

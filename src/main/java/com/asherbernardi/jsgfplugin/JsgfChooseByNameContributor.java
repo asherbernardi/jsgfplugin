@@ -1,6 +1,6 @@
 package com.asherbernardi.jsgfplugin;
 
-import com.asherbernardi.jsgfplugin.psi.RuleDeclarationName;
+import com.asherbernardi.jsgfplugin.psi.JsgfRuleDeclarationName;
 import com.intellij.navigation.ChooseByNameContributor;
 import com.intellij.navigation.NavigationItem;
 import com.intellij.openapi.project.Project;
@@ -14,10 +14,11 @@ import org.jetbrains.annotations.NotNull;
  * @author asherbernardi
  */
 public class JsgfChooseByNameContributor implements ChooseByNameContributor {
+
   @NotNull
   @Override
   public String[] getNames(Project project, boolean includeNonProjectItems) {
-    List<RuleDeclarationName> rules = JsgfUtil.findAllRules(project);
+    List<JsgfRuleDeclarationName> rules = JsgfUtil.findAllRules(project);
     List<String> names = new ArrayList<>(rules.size());
     for (RuleName rule : rules) {
       String name = rule.getRuleName();
@@ -30,8 +31,9 @@ public class JsgfChooseByNameContributor implements ChooseByNameContributor {
 
   @NotNull
   @Override
-  public NavigationItem[] getItemsByName(String name, String pattern, Project project, boolean includeNonProjectItems) {
-    List<RuleDeclarationName> rules = JsgfUtil.findAllRules(project, name);
+  public NavigationItem[] getItemsByName(String name, String pattern,
+      Project project, boolean includeNonProjectItems) {
+    List<JsgfRuleDeclarationName> rules = JsgfUtil.findAllRules(project, name);
     return rules.toArray(new NavigationItem[0]);
   }
 }

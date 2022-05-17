@@ -5,11 +5,9 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface JsgfGroup extends PsiElement {
+public interface JsgfTerminalExp extends JsgfExpansion {
 
   @Nullable
-  JsgfAlternatives getAlternatives();
-
-  boolean isOptionalGroup();
+  PsiElement getIdentifier();
 
 }

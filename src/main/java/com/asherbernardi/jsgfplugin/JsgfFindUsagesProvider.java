@@ -1,6 +1,11 @@
 package com.asherbernardi.jsgfplugin;
 
+import com.asherbernardi.jsgfplugin.psi.GrammarName;
+import com.asherbernardi.jsgfplugin.psi.JsgfGrammarDeclaration;
+import com.asherbernardi.jsgfplugin.psi.JsgfGrammarName;
 import com.asherbernardi.jsgfplugin.psi.JsgfRuleDefinition;
+import com.asherbernardi.jsgfplugin.psi.JsgfTypes;
+import com.intellij.lang.cacheBuilder.DefaultWordsScanner;
 import com.intellij.lang.cacheBuilder.WordsScanner;
 import com.intellij.lang.findUsages.FindUsagesProvider;
 import com.intellij.psi.PsiElement;
@@ -11,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Helps find the usages of a rule name declaration.
+ * Helps find the usages of a rule name declaration and grammar declarations.
  * @author asherbernardi
  */
 public class JsgfFindUsagesProvider implements FindUsagesProvider {
@@ -19,12 +24,15 @@ public class JsgfFindUsagesProvider implements FindUsagesProvider {
   @Override
   public WordsScanner getWordsScanner() {
     // Default word scanner seems to be fine
-    return null;
+    return new DefaultWordsScanner(new JsgfLexerAdapter(),
+        JsgfTypes.IDENTIFIERS,
+        JsgfTypes.COMMENTS,
+        JsgfTypes.LITERALS);
   }
 
   @Override
   public boolean canFindUsagesFor(@NotNull PsiElement psiElement) {
-    return (psiElement instanceof JsgfRuleDeclarationName);
+    return psiElement instanceof JsgfRuleDeclarationName || psiElement instanceof JsgfGrammarName;
   }
 
   @Nullable
@@ -38,6 +46,8 @@ public class JsgfFindUsagesProvider implements FindUsagesProvider {
   public String getType(@NotNull PsiElement element) {
     if (element instanceof RuleName)
       return "jsgf rule";
+    if (element instanceof GrammarName)
+      return "jsgf grammar";
     return "";
   }
 
@@ -45,7 +55,9 @@ public class JsgfFindUsagesProvider implements FindUsagesProvider {
   @Override
   public String getDescriptiveName(@NotNull PsiElement element) {
     if (element instanceof RuleName)
-      return element.getText();
+      return ((RuleName) element).getName();
+    if (element instanceof GrammarName)
+      return ((GrammarName) element).getName();
     return "";
   }
 
@@ -54,6 +66,12 @@ public class JsgfFindUsagesProvider implements FindUsagesProvider {
   public String getNodeText(@NotNull PsiElement element, boolean useFullName) {
     if (element instanceof RuleName) {
       PsiElement parent = PsiTreeUtil.findFirstParent(element, parentEl -> parentEl instanceof JsgfRuleDefinition);
+      if (parent != null) {
+        return parent.getText();
+      }
+    }
+    if (element instanceof GrammarName) {
+      PsiElement parent = PsiTreeUtil.findFirstParent(element, parentEl -> parentEl instanceof JsgfGrammarDeclaration);
       if (parent != null) {
         return parent.getText();
       }

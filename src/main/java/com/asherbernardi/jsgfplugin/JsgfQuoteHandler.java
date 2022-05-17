@@ -1,13 +1,14 @@
 package com.asherbernardi.jsgfplugin;
 
-import static com.asherbernardi.jsgfplugin.psi.JsgfBnfTypes.QUOTE_CLOSE;
-import static com.asherbernardi.jsgfplugin.psi.JsgfBnfTypes.QUOTE_OPEN;
+import static com.asherbernardi.jsgfplugin.psi.JsgfBnfTypes.QUOTE;
 import static com.asherbernardi.jsgfplugin.psi.JsgfBnfTypes.STRING_TEXT;
 
 import com.intellij.codeInsight.editorActions.QuoteHandler;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.highlighter.HighlighterIterator;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Handles quote typing and deleting.
@@ -18,48 +19,43 @@ public class JsgfQuoteHandler implements QuoteHandler {
 
   @Override
   public boolean isClosingQuote(HighlighterIterator iterator, int offset) {
-    return iterator.getTokenType() == QUOTE_CLOSE;
+    return iterator.getTokenType() == QUOTE && !mapQuotesForLine(iterator, offset).get(offset);
   }
 
   @Override
   public boolean isOpeningQuote(HighlighterIterator iterator, int offset) {
-    return iterator.getTokenType() == QUOTE_OPEN;
+    return iterator.getTokenType() == QUOTE && mapQuotesForLine(iterator, offset).get(offset);
   }
 
   @Override
   public boolean isInsideLiteral(HighlighterIterator iterator) {
-    return iterator.getTokenType() == QUOTE_OPEN
-        || iterator.getTokenType() == STRING_TEXT
-        || iterator.getTokenType() == QUOTE_CLOSE;
+    return iterator.getTokenType() == QUOTE
+        || iterator.getTokenType() == STRING_TEXT;
   }
 
   @Override
   public boolean hasNonClosedLiteral(Editor editor, HighlighterIterator iterator, int offset) {
+    return mapQuotesForLine(iterator, offset).size() % 2 != 0;
+  }
+
+  private static Map<Integer, Boolean> mapQuotesForLine(HighlighterIterator iterator, int offset) {
+    Map<Integer, Boolean> result = new HashMap<>();
     int start = iterator.getStart();
     try {
-      Document doc = editor.getDocument();
+      Document doc = iterator.getDocument();
       int lineEnd = doc.getLineEndOffset(doc.getLineNumber(offset));
-      // a JSGF string literal is properly composed of three tokens QUOTE_OPEN -> STRING_TEXT -> QUOTE_CLOSE
-      // or two tokens QUOTE_OPEN -> QUOTE_CLOSE
-      // Therefore, to check if all strings literals are closed, we confirm that any encountered
-      // QUOTE_OPEN is followed by a STRING_TEXT or a QUOTE_CLOSE and any encountered STRING_TEXT
-      // is followed by a QUOTE_CLOSE
+      int lineStart = doc.getLineStartOffset(doc.getLineNumber(offset));
+      revertIterator(iterator, lineStart);
+      boolean inString = false;
       while (!iterator.atEnd() && iterator.getStart() < lineEnd) {
-        if (iterator.getTokenType() == QUOTE_OPEN) {
-          iterator.advance();
-          if (iterator.getTokenType() != STRING_TEXT && iterator.getTokenType() != QUOTE_CLOSE) {
-            return true;
-          }
-        } else if (iterator.getTokenType() == STRING_TEXT) {
-          iterator.advance();
-          if (iterator.getTokenType() != QUOTE_CLOSE) {
-            return true;
-          }
-        } else {
-          iterator.advance();
+        if (iterator.getTokenType() == QUOTE) {
+          result.put(iterator.getStart(), !inString);
+          inString = !inString;
         }
+        iterator.advance();
       }
-      return false;
+      // If we reach the end of a line while in a string, we have a non-close literal
+      return result;
     } finally {
       revertIterator(iterator, start);
     }
