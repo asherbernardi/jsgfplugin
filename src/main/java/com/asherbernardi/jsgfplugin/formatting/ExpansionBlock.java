@@ -13,7 +13,6 @@ import com.asherbernardi.jsgfplugin.psi.JsgfGroupExp;
 import com.asherbernardi.jsgfplugin.psi.JsgfTag;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nonnull;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,7 +20,7 @@ public class ExpansionBlock extends JsgfBlock<JsgfExpansion> {
 
   private final Indent indent;
 
-  public ExpansionBlock(@Nonnull JsgfExpansion element, SpacingBuilder spacingBuilder, CodeStyleSettings settings, Indent indent) {
+  public ExpansionBlock(@NotNull JsgfExpansion element, SpacingBuilder spacingBuilder, CodeStyleSettings settings, Indent indent) {
     super(element, spacingBuilder, settings);
     this.indent = indent;
   }
