@@ -20,8 +20,10 @@ public class JsgfGrammarReferencesSearch extends QueryExecutorBase<PsiReference,
       @NotNull Processor<? super PsiReference> processor) {
     PsiElement element = searchParameters.getElementToSearch();
     if (element instanceof JsgfGrammarName) {
-      searchParameters.getOptimizer().searchWord(getTrimmedFileName(element), searchParameters.getEffectiveSearchScope(), true, element);
-      searchParameters.getOptimizer().searchWord(((JsgfGrammarName) element).getSimpleGrammarName(), searchParameters.getEffectiveSearchScope(), true, element);
+      searchParameters.getOptimizer().searchWord(getTrimmedFileName(element),
+          searchParameters.getEffectiveSearchScope(), true, element.getContainingFile());
+      searchParameters.getOptimizer().searchWord(((JsgfGrammarName) element).getSimpleGrammarName(),
+          searchParameters.getEffectiveSearchScope(), true, element);
     }
   }
 

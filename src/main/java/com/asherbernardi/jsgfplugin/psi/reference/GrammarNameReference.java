@@ -93,7 +93,7 @@ public class GrammarNameReference extends PsiReferenceBase<JsgfRuleReferenceName
   @NotNull
   @Override
   public JsgfResolveResultGrammar[] multiResolve(boolean incompleteCode) {
-    Set<JsgfResolveResultGrammar> results = new HashSet<>();
+    List<JsgfResolveResultGrammar> results = new ArrayList<>();
     JsgfFile file = (JsgfFile) myElement.getContainingFile();
     // If we can't find the rule declared in this grammar, or this not an unqualified rule check the imports
     // We only use cached import resolutions, since we assume that the imports would be resolved
