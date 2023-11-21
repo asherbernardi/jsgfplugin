@@ -1,0 +1,6 @@
+#JSGF V1.0;
+grammar com.package.PackageRename;
+
+public <enormous> = <rule1>;
+<rule1> = test | tost;
+<other> = <enormous>;

@@ -36,9 +36,10 @@ public class ExpansionBlock extends JsgfBlock<JsgfExpansion> {
         } else {
           childIndent = noneIndent();
         }
-        blocks.add(new ExpansionBlock((JsgfExpansion) child, getSpacingBuilder(), getSettings(), childIndent));
+        blocks.add(new ExpansionBlock((JsgfExpansion) child, getSpacingBuilder(), getSettings(),
+            childIndent));
       } else if (child instanceof JsgfTag) {
-        blocks.add(new TagBlock((JsgfTag) child, getSpacingBuilder(), getSettings()));
+        blocks.add(new TagBlock((JsgfTag) child, getSpacingBuilder(), getSettings(), noneIndent()));
       } else if (child instanceof PsiComment && getElement() instanceof JsgfGroupExp) {
         blocks.add(createSimpleBlock(child, normalIndent()));
       } else if (!(child instanceof PsiWhiteSpace)) {

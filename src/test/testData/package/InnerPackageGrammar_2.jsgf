@@ -1,0 +1,3 @@
+#JSGF V1.0;
+grammar com.package.Inner_2;
+public <first> = 1;

@@ -3,6 +3,7 @@ package com.asherbernardi.jsgfplugin;
 import com.asherbernardi.jsgfplugin.parser.JsgfBnfParser;
 import com.asherbernardi.jsgfplugin.psi.JsgfBnfTypes;
 import com.asherbernardi.jsgfplugin.psi.JsgfFile;
+import com.asherbernardi.jsgfplugin.psi.JsgfFileElementType;
 import com.asherbernardi.jsgfplugin.psi.JsgfTokenType;
 import com.asherbernardi.jsgfplugin.psi.JsgfTypes;
 import com.asherbernardi.jsgfplugin.psi.stub.JsgfStubElementTypes;
@@ -45,19 +46,19 @@ public class JsgfParserDefinition implements ParserDefinition {
 
   @NotNull
   @Override
-  public PsiParser createParser(final Project project) {
+  public JsgfBnfParser createParser(final Project project) {
     return new JsgfBnfParser();
   }
 
   @NotNull
   @Override
-  public IFileElementType getFileNodeType() {
+  public JsgfFileElementType getFileNodeType() {
     return JsgfStubElementTypes.FILE_ELEMENT_TYPE;
   }
 
   @NotNull
   @Override
-  public PsiFile createFile(@NotNull FileViewProvider viewProvider) {
+  public JsgfFile createFile(@NotNull FileViewProvider viewProvider) {
     return new JsgfFile(viewProvider);
   }
 

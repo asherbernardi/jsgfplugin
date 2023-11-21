@@ -7,7 +7,7 @@ import com.intellij.psi.PsiElement;
 
 public interface JsgfGroupExp extends JsgfExpansion {
 
-  @Nullable
+  @NotNull
   JsgfExpansion getExpansion();
 
   boolean isOptionalGroup();

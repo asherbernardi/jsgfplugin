@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface JsgfTerminalExp extends JsgfExpansion {
+public interface JsgfTerminalExp extends JsgfExpansion, JsgfBaseExpansion {
 
   @Nullable
   PsiElement getIdentifier();

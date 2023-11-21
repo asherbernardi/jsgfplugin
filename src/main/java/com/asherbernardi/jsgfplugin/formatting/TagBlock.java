@@ -17,17 +17,18 @@ import org.jetbrains.annotations.NotNull;
 
 public class TagBlock extends JsgfBlock<JsgfTag> {
 
-  protected TagBlock(@NotNull JsgfTag element, SpacingBuilder spacingBuilder, CodeStyleSettings settings) {
+  private final Indent indent;
+
+  protected TagBlock(@NotNull JsgfTag element, SpacingBuilder spacingBuilder, CodeStyleSettings settings, Indent indent) {
     super(element,  spacingBuilder, settings);
+    this.indent = indent;
   }
 
   @Override
   protected List<Block> buildChildren() {
     List<Block> blocks = new ArrayList<>();
     for (PsiElement child : FormattingUtil.iterableOfChildren(getElement())) {
-      if (!(child instanceof PsiWhiteSpace)) {
-        blocks.add(createSimpleBlock(child, noneIndent()));
-      }
+      blocks.add(createSimpleBlock(child, normalIndent()));
     }
     return blocks;
   }
@@ -35,14 +36,14 @@ public class TagBlock extends JsgfBlock<JsgfTag> {
   @Override
   public @NotNull ChildAttributes getChildAttributes(int newChildIndex) {
     if (isAfter(newChildIndex,
-        JsgfBnfTypes.LBRACE)) {
-      return new ChildAttributes(Indent.getNormalIndent(), null);
+        JsgfBnfTypes.LBRACE, JsgfBnfTypes.TAG_TOKEN)) {
+      return new ChildAttributes(normalIndent(), null);
     }
-    return new ChildAttributes(Indent.getNoneIndent(), null);
+    return new ChildAttributes(noneIndent(), null);
   }
 
   @Override
   public Indent getIndent() {
-    return Indent.getNoneIndent();
+    return indent;
   }
 }

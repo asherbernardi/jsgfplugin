@@ -12,7 +12,6 @@ import com.asherbernardi.jsgfplugin.psi.impl.*;
 public interface JsgfBnfTypes {
 
   IElementType EXPANSION = new JsgfElementType("EXPANSION");
-  IElementType EXPANSION_WITH_TAG_EXP = new JsgfElementType("EXPANSION_WITH_TAG_EXP");
   IElementType GRAMMAR_DECLARATION = new JsgfElementType("GRAMMAR_DECLARATION");
   IElementType GRAMMAR_NAME = GrammarNameStubElementType.getInstance("GRAMMAR_NAME");
   IElementType HEADER = new JsgfElementType("HEADER");
@@ -65,10 +64,7 @@ public interface JsgfBnfTypes {
   class Factory {
     public static PsiElement createElement(ASTNode node) {
       IElementType type = node.getElementType();
-      if (type == EXPANSION_WITH_TAG_EXP) {
-        return new JsgfExpansionWithTagExpImpl(node);
-      }
-      else if (type == GRAMMAR_DECLARATION) {
+      if (type == GRAMMAR_DECLARATION) {
         return new JsgfGrammarDeclarationImpl(node);
       }
       else if (type == GRAMMAR_NAME) {

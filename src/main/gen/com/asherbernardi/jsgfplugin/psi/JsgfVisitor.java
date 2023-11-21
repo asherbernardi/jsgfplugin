@@ -15,10 +15,6 @@ public class JsgfVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
-  public void visitExpansionWithTagExp(@NotNull JsgfExpansionWithTagExp o) {
-    visitExpansion(o);
-  }
-
   public void visitGrammarDeclaration(@NotNull JsgfGrammarDeclaration o) {
     visitPsiElement(o);
   }
@@ -73,6 +69,7 @@ public class JsgfVisitor extends PsiElementVisitor {
 
   public void visitRuleReferenceExp(@NotNull JsgfRuleReferenceExp o) {
     visitExpansion(o);
+    // visitBaseExpansion(o);
   }
 
   public void visitSequenceExp(@NotNull JsgfSequenceExp o) {
@@ -81,6 +78,7 @@ public class JsgfVisitor extends PsiElementVisitor {
 
   public void visitStringExp(@NotNull JsgfStringExp o) {
     visitExpansion(o);
+    // visitBaseExpansion(o);
   }
 
   public void visitTag(@NotNull JsgfTag o) {
@@ -89,6 +87,7 @@ public class JsgfVisitor extends PsiElementVisitor {
 
   public void visitTerminalExp(@NotNull JsgfTerminalExp o) {
     visitExpansion(o);
+    // visitBaseExpansion(o);
   }
 
   public void visitUnaryOperationExp(@NotNull JsgfUnaryOperationExp o) {

@@ -125,11 +125,11 @@ public class RuleNameReference extends PsiReferenceBase<JsgfRuleReferenceName>
     // We only use cached import resolutions, since we assume that the imports would be resolved
     // before the rule references.
     if (results.isEmpty()) {
-      final List<JsgfRuleImportName> importList = new ArrayList<>();
+      final List<@NotNull JsgfRuleImportName> importList = new ArrayList<>();
       switch (mode) {
         // If mode is unqualified then we need to consider all imports
         case UNQUALIFIED:
-          file.getImportNames().stream().filter(Objects::nonNull).forEachOrdered(importList::add);
+          importList.addAll(file.getImportNames());
           break;
         // If mode is QUALIFIED or FULLY-QUALIFIED then we pull the resolve from the attached
         // grammar reference
@@ -141,25 +141,32 @@ public class RuleNameReference extends PsiReferenceBase<JsgfRuleReferenceName>
           break;
       }
       for (@NotNull JsgfRuleImportName importName : importList) {
-        // Add all the matching rules of a '*' import
-        if (importName.isStarImport()) {
-          JsgfResolveResultRule[] importResolve =
-              importName.getReferencePair().getRuleReference().multiResolve(false);
-          // We can assume the element for the resolve result is a rule name, because we selected
-          // the second element from importName.getReferences()
-          Arrays.stream(importResolve)
-              .filter(result -> result.getElement().getRuleName().equals(ruleName))
-              .forEachOrdered(results::add);
-        }
-        // Add imports with a name that matches
-        else if (importName.getUnqualifiedRuleName().equals(ruleName)) {
-          JsgfResolveResultRule[] importResolve =
-              importName.getReferencePair().getRuleReference().multiResolve(false);
-          Collections.addAll(results, importResolve);
-        }
+        addResolvesFromImport(importName, results);
       }
     }
     return results.toArray(new JsgfResolveResultRule[0]);
+  }
+
+  private void addResolvesFromImport(JsgfRuleImportName importName, Set<JsgfResolveResultRule> results) {
+    // Add all the matching rules of a '*' import
+    if (importName.isStarImport()) {
+      ResolveResult[] importResolve =
+          importName.getReferencePair().getRuleReference().multiResolve(false);
+      // We can assume the element for the resolve result is a rule name, because we selected
+      // the second element from importName.getReferences()
+      Arrays.stream(importResolve)
+          .map(JsgfResolveResultRule.class::cast)
+          .filter(result -> result.getElement().getRuleName().equals(ruleName))
+          .forEachOrdered(results::add);
+    }
+    // Add imports with a name that matches
+    else if (importName.getUnqualifiedRuleName().equals(ruleName)) {
+      ResolveResult[] importResolve =
+          importName.getReferencePair().getRuleReference().multiResolve(false);
+      Arrays.stream(importResolve)
+          .map(JsgfResolveResultRule.class::cast)
+          .forEachOrdered(results::add);
+    }
   }
 
   @Nullable

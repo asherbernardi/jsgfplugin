@@ -10,4 +10,11 @@ public interface JsgfUnaryOperationExp extends JsgfExpansion {
   @NotNull
   JsgfExpansion getExpansion();
 
+  @Nullable
+  JsgfTag getTag();
+
+  boolean isStar();
+
+  boolean isPlus();
+
 }

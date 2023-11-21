@@ -30,9 +30,9 @@ public abstract class RuleDeclarationNameMixin extends StubBasedPsiElementBase<R
    * @return an icon
    */
   @NotNull
-  @SuppressWarnings("unused")
-  static Icon getElementIcon(JsgfRuleDeclarationName ruleDeclarationName, int flags) {
-    if (ruleDeclarationName.isPublicRule()) {
+  @Override
+  protected Icon getElementIcon(int flags) {
+    if (isPublicRule()) {
       return IconManager.getInstance().createRowIcon(JsgfIcons.FILE, PlatformIcons.PUBLIC_ICON);
     }
     return JsgfIcons.FILE;

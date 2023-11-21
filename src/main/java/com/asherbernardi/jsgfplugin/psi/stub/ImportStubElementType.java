@@ -11,9 +11,7 @@ import com.asherbernardi.jsgfplugin.psi.impl.JsgfRuleImportNameImpl;
 import java.io.IOException;
 import org.jetbrains.annotations.NotNull;
 
-public class ImportStubElementType extends IStubElementType<ImportStub, JsgfRuleImportName> {
-
-  public static final String ID = "jsgf.import";
+public class ImportStubElementType extends JsgfStubElementType<ImportStub, JsgfRuleImportName> {
 
   public ImportStubElementType() {
     super("IMPORT", JsgfLanguage.INSTANCE);
@@ -28,11 +26,6 @@ public class ImportStubElementType extends IStubElementType<ImportStub, JsgfRule
   public @NotNull ImportStub createStub(@NotNull JsgfRuleImportName psi,
       StubElement<?> parentStub) {
     return new ImportStubImpl(parentStub, psi.getFQRN());
-  }
-
-  @Override
-  public @NotNull String getExternalId() {
-    return ID;
   }
 
   @Override

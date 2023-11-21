@@ -11,9 +11,7 @@ import com.asherbernardi.jsgfplugin.psi.impl.JsgfGrammarNameImpl;
 import java.io.IOException;
 import org.jetbrains.annotations.NotNull;
 
-public class GrammarNameStubElementType extends IStubElementType<GrammarNameStub, JsgfGrammarName> {
-
-  public static final String ID = "jsgf.grammar";
+public class GrammarNameStubElementType extends JsgfStubElementType<GrammarNameStub, JsgfGrammarName> {
 
   public GrammarNameStubElementType() {
     super("GRAMMAR", JsgfLanguage.INSTANCE);
@@ -28,11 +26,6 @@ public class GrammarNameStubElementType extends IStubElementType<GrammarNameStub
   public @NotNull GrammarNameStub createStub(@NotNull JsgfGrammarName psi,
       StubElement<?> parentStub) {
     return new GrammarNameStubImpl(parentStub, psi.getFQGN());
-  }
-
-  @Override
-  public @NotNull String getExternalId() {
-    return ID;
   }
 
   @Override

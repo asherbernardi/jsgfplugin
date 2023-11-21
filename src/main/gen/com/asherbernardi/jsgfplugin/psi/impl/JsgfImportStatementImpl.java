@@ -33,7 +33,7 @@ public class JsgfImportStatementImpl extends ImportStatementMixin implements Jsg
   }
 
   @Override
-  public JsgfRuleImportName getRuleImportName() {
+  public @Nullable JsgfRuleImportName getRuleImportName() {
     return JsgfPsiImplInjections.getRuleImportName(this);
   }
 

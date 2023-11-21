@@ -102,14 +102,14 @@ public class JsgfFormattingModelBuilder implements FormattingModelBuilder {
     else if (element instanceof JsgfRuleDefinition) {
       block = new RuleDefinitionBlock((JsgfRuleDefinition) element, createSpacingBuilder(settings), settings);
     }
+    // Tag
+    else if (element instanceof JsgfTag) {
+      block = new TagBlock((JsgfTag) element, createSpacingBuilder(settings), settings, Indent.getNoneIndent());
+    }
     // Expansions
     else if (element instanceof JsgfExpansion) {
       block = new ExpansionBlock((JsgfExpansion) element, createSpacingBuilder(settings), settings,
           Indent.getNoneIndent());
-    }
-    // Tag
-    else if (element instanceof JsgfTag) {
-      block = new TagBlock((JsgfTag) element, createSpacingBuilder(settings), settings);
     }
     // Other
     else {

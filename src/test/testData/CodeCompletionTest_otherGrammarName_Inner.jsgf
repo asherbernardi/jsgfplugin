@@ -1,0 +1,11 @@
+#JSGF V1.0;
+grammar CodeCompletionTest;
+import <Inne<caret>>;
+<rule4> = 4;
+<rule1> = 1;
+<rule2> = 2;
+<test> = <rule1>;
+<rule3> = 3;
+<5Rule> = 5;
+<anotherLocal> = 6;
+<notThisOne> = no;

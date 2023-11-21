@@ -6,13 +6,27 @@ import com.asherbernardi.jsgfplugin.psi.JsgfRuleDeclarationName;
 import com.asherbernardi.jsgfplugin.psi.JsgfRuleImportName;
 import com.asherbernardi.jsgfplugin.psi.stub.GrammarStubIndex;
 import com.asherbernardi.jsgfplugin.psi.stub.RuleStubIndex;
+import com.google.common.collect.AbstractIterator;
+import com.intellij.codeInsight.AutoPopupController;
+import com.intellij.codeInsight.completion.InsertHandler;
+import com.intellij.codeInsight.lookup.LookupElement;
+import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.lang.ASTNode;
+import com.intellij.openapi.command.WriteCommandAction;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.highlighter.HighlighterIterator;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiManager;
+import com.intellij.psi.PsiReference;
+import com.intellij.psi.impl.source.tree.CompositeElement;
+import com.intellij.psi.impl.source.tree.LeafElement;
+import com.intellij.psi.impl.source.tree.TreeElement;
+import com.intellij.psi.impl.source.tree.TreeElementVisitor;
 import com.intellij.psi.search.FileTypeIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.asherbernardi.jsgfplugin.psi.RuleName;
@@ -29,21 +43,35 @@ import com.asherbernardi.jsgfplugin.psi.stub.RuleStubIndex;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Helper methods for Jsgf PSI elements
  * @author asherbernardi
  */
 public class JsgfUtil {
+
+  @Nullable
+  public static PsiReference getReference(PsiElement element) {
+    PsiReference ref = element.getReference();
+    if (ref != null) return ref;
+    PsiReference[] refs = element.getReferences();
+    if (refs.length == 0) return null;
+    return refs[0];
+  }
 
   @NotNull
   public static List<JsgfRuleDeclarationName> findRulesInFile(JsgfFile file, String ruleText) {
@@ -53,7 +81,7 @@ public class JsgfUtil {
   @NotNull
   public static List<JsgfRuleDeclarationName> findRulesInFile(JsgfFile file, String ruleText, boolean publicOnly) {
     Collection<JsgfRuleDeclarationName> rules =
-        RuleStubIndex.getRulesByQualifiedName(ruleText, file.getProject(), GlobalSearchScope.fileScope(file));
+        RuleStubIndex.getRulesByQualifiedName(ruleText, file.getProject(), GlobalSearchScope.fileScope(file.getOriginalFile()));
     if (publicOnly) {
       return rules.stream().filter(JsgfRuleDeclarationName::isPublicRule)
           .collect(Collectors.toList());
@@ -155,20 +183,66 @@ public class JsgfUtil {
 
   @NotNull
   public static List<JsgfFile> findFilesByPackageFilePath(JsgfRuleImportName importName) {
-    List<JsgfFile> result = new ArrayList<>();
-    if (importName == null) return result;
+    if (importName == null) return Collections.emptyList();
     JsgfFile currentFile = (JsgfFile) importName.getContainingFile();
     VirtualFile currentVirtualFile = currentFile.getOriginalFile().getVirtualFile();
-    if (currentVirtualFile == null) return result;
-    String currentFilePath = currentVirtualFile.getCanonicalPath();
+    if (currentVirtualFile == null) return Collections.emptyList();
     Project project = currentFile.getProject();
     // Matching by file path
-    Collection<VirtualFile> virtualFiles =
-        FileTypeIndex.getFiles(JsgfFileType.INSTANCE, GlobalSearchScope.allScope(project));
-    for (VirtualFile virtualFile : findFilePathMatches(currentFilePath, importName.getFullyQualifiedGrammarName(), virtualFiles)) {
-      result.add((JsgfFile) PsiManager.getInstance(project).findFile(virtualFile));
+    List<JsgfFile> result = new ArrayList<>();
+    Module module = ModuleUtil.findModuleForPsiElement(importName);
+    if (module == null) return Collections.emptyList();
+    for (VirtualFile folder : ModuleRootManager.getInstance(module).getSourceRoots()) {
+      addFileFromContentRoot(folder, importName, project, result);
     }
     return result;
+  }
+
+  private static void addFileFromContentRoot(VirtualFile root, JsgfRuleImportName importName, Project project, List<JsgfFile> matches) {
+    String FQGN = importName.getFullyQualifiedGrammarName();
+    String[] dotSplit = FQGN.split("\\s*\\.\\s*");
+    VirtualFile currentFolder = root;
+    int i = 0;
+    F: while (currentFolder != null && i < dotSplit.length) {
+      VirtualFile[] children = currentFolder.getChildren();
+      if (children == null) break;
+      String targetNextName = dotSplit[i];
+      for (VirtualFile child : children) {
+        if (child.getNameWithoutExtension().equals(targetNextName)) {
+          currentFolder = child;
+          i++;
+          continue F;
+        }
+      }
+      break;
+    }
+    // If we've gotten all the way through the package and grammar name
+    if (i == dotSplit.length && currentFolder != null) {
+      JsgfFile file = (JsgfFile) PsiManager.getInstance(project).findFile(currentFolder);
+      if (file != null) {
+        matches.add(file);
+      }
+    }
+  }
+
+  public static boolean importNameMatchesFilePath(JsgfRuleImportName importName, JsgfFile targetFile, Set<VirtualFile> contentRoots) {
+    String FQGN = importName.getFullyQualifiedGrammarName();
+    String[] dotSplit = FQGN.split("\\s*\\.\\s*");
+    VirtualFile currentFile = targetFile.getVirtualFile();
+    int i = dotSplit.length - 1;
+    while (currentFile != null && i >= 0) {
+      String targetNextName = dotSplit[i];
+      if (!currentFile.getNameWithoutExtension().equals(targetNextName)) {
+        return false;
+      }
+      currentFile = currentFile.getParent();
+      i--;
+    }
+    // If we've gotten all the way through the package and grammar name
+    if (i != -1) {
+      return false;
+    }
+    return contentRoots.contains(currentFile);
   }
 
   @NotNull
@@ -196,33 +270,13 @@ public class JsgfUtil {
         Matcher.quoteReplacement(FileSystems.getDefault().getSeparator()));
   }
 
+  public static String replaceSeparatorWithDot(String string) {
+    return string.replaceAll("\\s*([\\\\/]|://)\\s*", ".");
+  }
+
   public static String stripExtension(String fileName) {
     int lastDot = fileName.lastIndexOf('.');
     return fileName.substring(0, lastDot > -1 ? lastDot : fileName.length());
-  }
-
-  public static List<VirtualFile> findFilePathMatches(String currentPathString, String fullyQualifiedGrammarNameImport, Collection<VirtualFile> otherVirtualFiles) {
-    TreeMap<Integer, List<VirtualFile>> result = new TreeMap<>();
-    for (VirtualFile otherVirtualFile : otherVirtualFiles) {
-      String otherPathString = otherVirtualFile.getCanonicalPath();
-      if (otherPathString == null) continue;
-      Path otherPath = Path.of(otherPathString);
-      Path currentPath = Path.of(currentPathString);
-      Path commonParent = deepestCommonParent(otherPath, currentPath);
-      if (commonParent == null) continue;
-      Path otherDirectory = otherPath.getParent();
-      Path importDirectoryPath = Path.of(replaceDotWithSeparator(
-          JsgfPsiImplInjections.packageNameFromFQGN(fullyQualifiedGrammarNameImport)));
-      if (otherDirectory.endsWith(importDirectoryPath)) {
-        String noExtension = stripExtension(otherPath.getFileName().toString());
-        String importFileNameString = JsgfPsiImplInjections.simpleGrammarNameFromFQGN(
-            fullyQualifiedGrammarNameImport);
-        if (noExtension.equals(importFileNameString)) {
-          result.computeIfAbsent(commonParent.getNameCount(), k -> new ArrayList<>()).add(otherVirtualFile);
-        }
-      }
-    }
-    return result.isEmpty() ? Collections.emptyList() : result.lastEntry().getValue();
   }
 
   public static Path deepestCommonParent(Path path1, Path path2) {
@@ -241,6 +295,120 @@ public class JsgfUtil {
       i++;
     }
     return root.resolve(path1.subpath(0, i));
+  }
+
+  private static boolean packageNameCouldMatch(JsgfRuleImportName importName, JsgfFile file) {
+    String fqgn = importName.getFullyQualifiedGrammarName();
+    return fqgn != null && (
+        (file.getGrammarName() != null && fqgn.equals(file.getGrammarName().getName()))
+            || JsgfPsiImplInjections.simpleGrammarNameFromFQGN(fqgn).equals(stripExtension(file.getName()))
+    );
+  }
+
+  public static List<LookupElement> allFilesAsImportVariants(JsgfRuleImportName importName) {
+    Project project = importName.getProject();
+    Module module = ModuleUtil.findModuleForPsiElement(importName);
+    if (module == null) return Collections.emptyList();
+    List<LookupElement> result = new ArrayList<>();
+    // Add by pure grammar name
+    String importGrammarName = importName.getFullyQualifiedGrammarName();
+    JsgfFile myFile = (JsgfFile) importName.getContainingFile();
+    JsgfGrammarName myGrammarName = myFile.getGrammarName();
+    String myGrammarNameString = myGrammarName != null ? myGrammarName.getName() : "";
+    Collection<JsgfGrammarName> allMatchingGrammars = GrammarStubIndex.getAllGrammarsInModule(project, module);
+    allMatchingGrammars.stream()
+        .filter(gn -> !gn.getName().equals(myGrammarNameString)) // exclude self
+        .filter(gn -> gn.getName().startsWith(importGrammarName))
+        .forEach(gn -> result.add(
+            LookupElementBuilder.create(
+                    importGrammarName.isEmpty() ? gn.getFQGN()
+                        : gn.getFQGN().replace(importGrammarName + ".", "")
+                )
+                .withLookupString(gn.getSimpleGrammarName())
+                .withIcon(JsgfIcons.FILE)
+                .withTypeText("Grammar " + gn.getContainingFile().getName())
+                .withInsertHandler(GRAMMAR_NAME_HANDLER)
+        ));
+    // Add by file path
+    String fqgn = importName.getFullyQualifiedGrammarName();
+    VirtualFile[] roots = ModuleRootManager.getInstance(module).getSourceRoots();
+    for (VirtualFile root : roots) {
+      addVariantsFromRoot(root, myFile.getOriginalFile().getVirtualFile(), fqgn, result);
+    }
+    return result;
+  }
+
+  private static final InsertHandler<LookupElement> GRAMMAR_NAME_HANDLER = (context, item) -> {
+    int offset = context.getTailOffset();
+    Project project = context.getProject();
+    Editor editor = context.getEditor();
+    WriteCommandAction.runWriteCommandAction(project, () -> editor.getDocument().insertString(offset, "."));
+    context.getEditor().getCaretModel().moveToOffset(offset + 1);
+    AutoPopupController.getInstance(project).scheduleAutoPopup(editor);
+  };
+
+  private static void addVariantsFromRoot(VirtualFile root, VirtualFile excludeFile, String fqgn, List<LookupElement> variants) {
+    VirtualFile currentFolder = root;
+    if (!fqgn.isEmpty()) {
+      String[] dotSplit = fqgn.split("\\s*\\.\\s*");
+      int i = 0;
+      F: while (currentFolder != null && i < dotSplit.length) {
+        VirtualFile[] children = currentFolder.getChildren();
+        if (children == null)
+          break;
+        String targetNextName = dotSplit[i];
+        for (VirtualFile child : children) {
+          if (child.getNameWithoutExtension().equals(targetNextName)) {
+            currentFolder = child;
+            i++;
+            continue F;
+          }
+        }
+        break;
+      }
+      if (i != dotSplit.length || currentFolder == null) return;
+    }
+    // If we've gotten all the way through the splits of the grammar name so far
+    VirtualFile[] children = currentFolder.getChildren();
+    if (children != null) {
+      // now we add all the subfolders as variants
+      for (VirtualFile file : children) {
+        if (file.isDirectory()) {
+          variants.add(LookupElementBuilder.create(file.getNameWithoutExtension())
+              .withIcon(JsgfIcons.FILE)
+              .withTypeText("Package " + file.getName())
+              .withInsertHandler(GRAMMAR_NAME_HANDLER)
+          );
+        }
+      }
+      // now we breadth-first search all the folders for Jsgf files
+      // Arbitrarily stopping after visiting 100 files to prevent slow resolution
+      int max = 100;
+      Deque<VirtualFile> queue = new LinkedList<>(Arrays.asList(children));
+      int i = 0;
+      while (!queue.isEmpty()) {
+        if (i++ > max) break;
+        VirtualFile current = queue.poll();
+        if (current.isDirectory()) {
+          Arrays.asList(current.getChildren()).forEach(queue::offer);
+        } else {
+          if (!current.getFileType().equals(JsgfFileType.INSTANCE)) continue;
+          if (current.equals(excludeFile)) continue;
+          LinkedList<String> variant = new LinkedList<>();
+          variant.add(current.getNameWithoutExtension());
+          for (VirtualFile parent = current.getParent(); parent != null && !parent.equals(currentFolder); parent = parent.getParent()) {
+            variant.addFirst(parent.getNameWithoutExtension());
+          }
+          String variantString = String.join(".", variant);
+          variants.add(LookupElementBuilder.create(variantString)
+              .withIcon(JsgfIcons.FILE)
+              .withLookupString(current.getNameWithoutExtension())
+              .withTypeText("Grammar " + current.getName())
+              .withInsertHandler(GRAMMAR_NAME_HANDLER)
+          );
+        }
+      }
+    }
   }
 
   @NotNull
@@ -278,5 +446,168 @@ public class JsgfUtil {
       }
     }
     return children;
+  }
+
+  static void revertHighlighterIterator(HighlighterIterator iterator, int targetStart) {
+    while (!iterator.atEnd() && iterator.getStart() < targetStart) {
+      iterator.advance();
+    }
+    while (!iterator.atEnd() && iterator.getStart() > targetStart) {
+      iterator.retreat();
+    }
+  }
+
+  private static class StartsWithVisitor extends TreeElementVisitor {
+
+    final byte[] prefix;
+    int i;
+
+    StartsWithVisitor(String prefix) {
+      this.prefix = prefix.getBytes();
+      this.i = 0;
+    }
+
+    @Override
+    public void visitLeaf(LeafElement leaf) {
+      byte[] text = leaf.getText().getBytes();
+      int j = 0;
+      while (i < prefix.length && j < text.length) {
+        if (text[j++] != prefix[i++]) {
+          throw new StartsWithEndedException(false);
+        }
+      }
+      if (i >= prefix.length) {
+        throw new StartsWithEndedException(true);
+      }
+    }
+
+    @Override
+    public void visitComposite(CompositeElement composite) {
+      for (TreeElement child : iterableOfChildren(composite)) {
+        child.acceptTree(this);
+      }
+    }
+  }
+
+  private static class StartsWithEndedException extends RuntimeException {
+    final boolean success;
+    StartsWithEndedException(boolean success) {
+      this.success = success;
+    }
+  }
+
+  static boolean textStartsWith(ASTNode element, String prefix) {
+    if (element instanceof TreeElement) {
+      try {
+        ((TreeElement) element).acceptTree(new StartsWithVisitor(prefix));
+      } catch (StartsWithEndedException e) {
+        return e.success;
+      }
+    }
+    return element.getText().startsWith(prefix);
+  }
+
+  public static Iterable<TreeElement> iterableOfChildren(TreeElement parent) {
+    return () -> new Iterator<>() {
+      TreeElement current = parent.getFirstChildNode();
+
+      @Override
+      public boolean hasNext() {
+        return current != null;
+      }
+
+      @Override
+      public TreeElement next() {
+        TreeElement oldCurrent = current;
+        current = current.getTreeNext();
+        return oldCurrent;
+      }
+    };
+  }
+
+  public static Iterable<LeafElement> leafIterableNext(LeafElement node) {
+    return () -> leafIteratorNext(node);
+  }
+
+  public static Iterator<LeafElement> leafIteratorNext(LeafElement node) {
+    return new AbstractIterator<LeafElement>() {
+      LeafElement current = node;
+
+      @Override
+      protected LeafElement computeNext() {
+        TreeElement sibling = current.getTreeNext();
+        if (sibling instanceof LeafElement) {
+          return current = (LeafElement) sibling;
+        } if (sibling != null) {
+          LeafElement nephew = descendToFirstLeaf(sibling);
+          if (nephew != null) {
+            return current = nephew;
+          }
+        }
+        for (TreeElement parent = current.getTreeParent(); parent != null; parent = parent.getTreeParent()) {
+          for (TreeElement parentSibling = parent.getTreeNext(); parentSibling != null; parentSibling = parentSibling.getTreeNext()) {
+            LeafElement firstLeaf = descendToFirstLeaf(parentSibling);
+            if (firstLeaf != null) {
+              return current = firstLeaf;
+            }
+          }
+        }
+        return endOfData();
+      }
+    };
+  }
+
+  @Nullable
+  public static LeafElement descendToFirstLeaf(ASTNode node) {
+    if (node == null) {
+      return null;
+    }
+    if (node instanceof LeafElement) {
+      return (LeafElement) node;
+    }
+    return descendToFirstLeaf(node.getFirstChildNode());
+  }
+
+  public static Iterable<LeafElement> leafIterablePrev(LeafElement node) {
+    return () -> leafIteratorPrev(node);
+  }
+
+  public static Iterator<LeafElement> leafIteratorPrev(LeafElement node) {
+    return new AbstractIterator<LeafElement>() {
+      LeafElement current = node;
+
+      @Override
+      protected LeafElement computeNext() {
+        TreeElement sibling = current.getTreePrev();
+        if (sibling instanceof LeafElement) {
+          return current = (LeafElement) sibling;
+        } if (sibling != null) {
+          LeafElement nephew = descendToLastLeaf(sibling);
+          if (nephew != null) {
+            return current = nephew;
+          }
+        }
+        for (TreeElement parent = current.getTreeParent(); parent != null; parent = parent.getTreeParent()) {
+          for (TreeElement parentSibling = parent.getTreePrev(); parentSibling != null; parentSibling = parentSibling.getTreePrev()) {
+            LeafElement firstLeaf = descendToLastLeaf(parentSibling);
+            if (firstLeaf != null) {
+              return current = firstLeaf;
+            }
+          }
+        }
+        return endOfData();
+      }
+    };
+  }
+
+  @Nullable
+  public static LeafElement descendToLastLeaf(ASTNode node) {
+    if (node == null) {
+      return null;
+    }
+    if (node instanceof LeafElement) {
+      return (LeafElement) node;
+    }
+    return descendToLastLeaf(node.getLastChildNode());
   }
 }

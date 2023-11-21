@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface JsgfRuleReferenceExp extends JsgfExpansion {
+public interface JsgfRuleReferenceExp extends JsgfExpansion, JsgfBaseExpansion {
 
   @Nullable
   JsgfRuleReferenceName getRuleReferenceName();

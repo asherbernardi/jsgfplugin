@@ -13,6 +13,7 @@ import com.intellij.lang.annotation.Annotator;
 import com.intellij.lang.annotation.HighlightSeverity;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.ResolveResult;
 import com.intellij.psi.search.searches.ReferencesSearch;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -64,8 +65,7 @@ public class JsgfErrorAnnotator implements Annotator {
       }
     }
     // Mark unresolved rule references
-    if (element instanceof JsgfRuleReferenceName) {
-      JsgfRuleReferenceName ruleRef = (JsgfRuleReferenceName) element;
+    if (element instanceof JsgfRuleReferenceName ruleRef) {
       // reserved special rules
       if ("NULL".equals(myText) || "VOID".equals(myText))
         return;
@@ -90,30 +90,29 @@ public class JsgfErrorAnnotator implements Annotator {
             .create();
       }
     }
-    if (element instanceof JsgfRuleImportName) {
-      JsgfRuleImportName importName = (JsgfRuleImportName) element;
+    if (element instanceof JsgfRuleImportName importName) {
       OtherFileReferencePair refPair = importName.getReferencePair();
       // Resolving the grammar name
       OtherFileGrammarNameReference refGrammar = refPair.getGrammarReference();
-      JsgfResolveResultGrammar[] resolvesGrammar = refGrammar.multiResolve(false);
+      JsgfResolveResultGrammar[] resolvesGrammar = refGrammar != null ? refGrammar.multiResolve(false) : new JsgfResolveResultGrammar[0];
       if (resolvesGrammar.length == 0) {
         holder.newAnnotation(HighlightSeverity.ERROR, "Grammar not found for imported rule: "
-                + importName.getSimpleGrammarName())
-            .range(refGrammar.getAbsoluteRange())
+            + importName.getSimpleGrammarName())
+            .range(refGrammar != null ? refGrammar.getAbsoluteRange() : importName.getTextRange())
             .create();
       } else if (resolvesGrammar.length > 1) {
         holder.newAnnotation(HighlightSeverity.WARNING, "Can't resolve multiple grammar name matches: "
-                + importName.getSimpleGrammarName())
+                    + importName.getSimpleGrammarName())
             .range(refGrammar.getAbsoluteRange())
             .create();
       }
       // Resolving the rule name
       if (!importName.isStarImport()) {
         OtherFileRuleNameReference refRule = refPair.getRuleReference();
-        JsgfResolveResultRule[] resolvesRule = refRule.multiResolve(false);
+        ResolveResult[] resolvesRule = refRule.multiResolve(false);
         if (resolvesRule.length == 0) {
           holder.newAnnotation(HighlightSeverity.ERROR,
-              "Cannot resolve reference to imported rule: " + myText)
+                  "Cannot resolve reference to imported rule: " + myText)
               .textAttributes(JsgfHighlightType.BAD_REFERENCE.getTextAttributesKey())
               .range(refRule.getAbsoluteRange())
               .create();
@@ -122,8 +121,8 @@ public class JsgfErrorAnnotator implements Annotator {
               "Rule import refers to more than one declaration: " + myText)
               .range(refRule.getAbsoluteRange())
               .create();
-        } else if (!resolvesRule[0].isLocal()
-            && !resolvesRule[0].getElement().isPublicRule()) {
+        } else if (!((JsgfResolveResultRule) resolvesRule[0]).isLocal()
+            && !((JsgfResolveResultRule) resolvesRule[0]).getElement().isPublicRule()) {
           holder.newAnnotation(HighlightSeverity.ERROR,
               "<" + refRule.getUnqualifiedName() + "> does not have public access in "
                   + resolvesRule[0].getElement().getContainingFile().getName())

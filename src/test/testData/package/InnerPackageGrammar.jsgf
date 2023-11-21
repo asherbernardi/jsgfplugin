@@ -1,0 +1,9 @@
+#JSGF V1.0;
+grammar com.package.Inner;
+public <first> = 1;
+public <second> = 1;
+public <third> = 1 {
+  some tag
+};
+public <fourth> = <privateRule>;
+<privateRule> = 2;

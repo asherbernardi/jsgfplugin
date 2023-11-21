@@ -1,0 +1,5 @@
+#JSGF V1.0;
+grammar com.rename.rule.Test;
+
+public <rule1> = test {a tag} | tost {another tag};
+public <gangly> = <rule1>;

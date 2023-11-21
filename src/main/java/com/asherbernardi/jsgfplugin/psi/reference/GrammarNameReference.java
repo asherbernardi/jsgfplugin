@@ -120,7 +120,8 @@ public class GrammarNameReference extends PsiReferenceBase<JsgfRuleReferenceName
           importName.getReferencePair().getGrammarReference().multiResolve(false);
       Arrays.stream(importResolve)
           .filter(result -> result.getElement() instanceof GrammarName
-              && ((GrammarName) result.getElement()).getSimpleGrammarName().equals(simpleGrammarName))
+              && ((GrammarName) result.getElement()).getSimpleGrammarName().equals(simpleGrammarName)
+            || JsgfUtil.stripExtension(result.getElement().getContainingFile().getName()).equals(simpleGrammarName))
           .forEachOrdered(results::add);
     }
     if (results.size() > 1) {

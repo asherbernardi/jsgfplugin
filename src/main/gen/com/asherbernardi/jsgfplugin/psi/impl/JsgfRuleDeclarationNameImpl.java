@@ -42,8 +42,7 @@ public class JsgfRuleDeclarationNameImpl extends RuleDeclarationNameMixin implem
   }
 
   @Override
-  @NotNull
-  public String getName() {
+  public @NotNull String getName() {
     return JsgfPsiImplInjections.getName(this);
   }
 
@@ -63,14 +62,12 @@ public class JsgfRuleDeclarationNameImpl extends RuleDeclarationNameMixin implem
   }
 
   @Override
-  @Nullable
-  public PsiElement getNameIdentifier() {
+  public @Nullable PsiElement getNameIdentifier() {
     return JsgfPsiImplInjections.getNameIdentifier(this);
   }
 
   @Override
-  @NotNull
-  public SearchScope getUseScope() {
+  public @NotNull SearchScope getUseScope() {
     return JsgfPsiImplInjections.getUseScope(this);
   }
 

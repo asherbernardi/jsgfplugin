@@ -5,6 +5,7 @@ import com.asherbernardi.jsgfplugin.psi.reference.ImportRuleNameReference;
 import com.asherbernardi.jsgfplugin.psi.reference.LocalReferencePair;
 import com.asherbernardi.jsgfplugin.psi.reference.OtherFileGrammarNameReference;
 import com.asherbernardi.jsgfplugin.psi.reference.OtherFileReferencePair;
+import com.asherbernardi.jsgfplugin.psi.reference.OtherFileRuleNameReference;
 import com.asherbernardi.jsgfplugin.psi.reference.RuleNameReference;
 import com.asherbernardi.jsgfplugin.psi.stub.ImportStub;
 import com.intellij.navigation.ItemPresentation;
@@ -78,6 +79,7 @@ public interface JsgfPsiImplInjections {
    **********   ImportStatement methods  **********
    */
 
+  @Nullable
   static JsgfRuleImportName getRuleImportName(JsgfImportStatement importStatement) {
     JsgfRuleImport ruleImport = importStatement.getRuleImport();
     return ruleImport != null ? ruleImport.getRuleImportName() : null;
@@ -139,26 +141,18 @@ public interface JsgfPsiImplInjections {
     return stubify(importName, ImportStub::getFullyQualifiedRuleName, JsgfRuleImportName::getFQRN);
   }
 
-  /**
-   * Returns an array of length 2. The first element in the array is a reference to the
-   * grammar name in the import, and the second is a reference to rule itself. If this is
-   * a star import, both references will resolve to the grammar name.
-   * @param importName The import name
-   * @return 2 references, one to the grammar and another to the rule for the given import
-   */
-  @NotNull
-  static PsiReference[] getReferences(JsgfRuleImportName importName) {
-    return getReferencePair(importName).getReferenceArray();
-  }
-
   static OtherFileReferencePair getReferencePair(JsgfRuleImportName importName) {
-    String fqgn = importName.getFullyQualifiedGrammarName();
-    String uqrn = importName.getUnqualifiedRuleName();
-    TextRange grammarRange = new TextRange(0, fqgn.length());
-    TextRange ruleRange = new TextRange(0, fqgn.length() + 1 + uqrn.length());
-    return new OtherFileReferencePair(
-        new OtherFileGrammarNameReference(importName, grammarRange),
-        new ImportRuleNameReference(importName, ruleRange));
+    String fqrn = importName.getFullyQualifiedRuleName();
+    int lastDot = fqrn.lastIndexOf('.');
+    OtherFileGrammarNameReference grammarReference;
+    if (lastDot != -1) {
+      grammarReference = new OtherFileGrammarNameReference(importName, new TextRange(0, lastDot));
+    } else {
+      grammarReference = null;
+    }
+    OtherFileRuleNameReference ruleReference;
+    ruleReference = new ImportRuleNameReference(importName, new TextRange(lastDot + 1, fqrn.length()));
+    return new OtherFileReferencePair(grammarReference, ruleReference);
   }
 
   static @NotNull SearchScope getUseScope(JsgfRuleImportName importName) {
@@ -181,29 +175,12 @@ public interface JsgfPsiImplInjections {
     GrammarNameReference grammarReference = null;
     int lastDot = fqrn.lastIndexOf('.');
     if (lastDot != -1) {
-      String grammarName = fullyQualifiedGrammarNameFromFQRN(fqrn);
       TextRange grammarRange = new TextRange(0, lastDot);
       grammarReference = new GrammarNameReference(ruleReferenceName, grammarRange, fqrn);
-      TextRange ruleRange = new TextRange(0, fqrn.length());
-      ruleReference = new RuleNameReference(ruleReferenceName, ruleRange, fqrn, grammarReference);
-    } else {
-      TextRange ruleRange = new TextRange(0, fqrn.length());
-      ruleReference = new RuleNameReference(ruleReferenceName, ruleRange, fqrn, null);
     }
+    TextRange ruleRange = new TextRange(lastDot + 1, fqrn.length());
+    ruleReference = new RuleNameReference(ruleReferenceName, ruleRange, fqrn, grammarReference);
     return new LocalReferencePair(grammarReference, ruleReference);
-  }
-
-  /**
-   * Returns an array of length 1 or 2. If the rule is unqualified, it will be length 1 and the
-   * element will be a single RuleNameReference. If the rule is qualified or fully-qualified, the
-   * first element will be a GrammarNameReference, and the second a RuleNameReference.
-   *
-   * @param ruleReferenceName the rule reference name element
-   * @return either just a RuleNameReference, or a RulenameReference and a GrammarNameReference
-   */
-  @NotNull
-  static PsiReference[] getReferences(JsgfRuleReferenceName ruleReferenceName) {
-    return getReferencePair(ruleReferenceName).getReferenceArray();
   }
 
   static @NotNull SearchScope getUseScope(JsgfRuleReferenceName ruleReferenceName) {
@@ -279,7 +256,9 @@ public interface JsgfPsiImplInjections {
    */
 
   static String getStringText(JsgfStringExp string) {
-    return string.getText().substring(1, string.getTextLength())
+    PsiElement stringText = string.getFirstChild().getNextSibling();
+    if (stringText == null || stringText.getNode().getElementType() != JsgfBnfTypes.STRING_TEXT) return "";
+    return stringText.getText()
         .replace("\\\\", "\\")
         .replace("\\\"", "\"");
   }
@@ -295,6 +274,18 @@ public interface JsgfPsiImplInjections {
   /*
    **********   Sequence methods  **********
    */
+
+  /*
+   **********   Unary methods  **********
+   */
+
+  static boolean isStar(JsgfUnaryOperationExp unary) {
+    return unary.getNode().getLastChildNode().getElementType() == JsgfBnfTypes.STAR;
+  }
+
+  static boolean isPlus(JsgfUnaryOperationExp unary) {
+    return unary.getNode().getLastChildNode().getElementType() == JsgfBnfTypes.PLUS;
+  }
 
   /*
    **********   Group methods  **********

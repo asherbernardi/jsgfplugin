@@ -1,0 +1,8 @@
+#JSGF V1.0;
+grammar RenameTest;
+import <com.rename.rule.Test.gangly>;
+import <package.RenameRuleTestPackage.*>;
+
+<giggly> = "nothing";
+public <jiggly> = <giggly>;
+public <jostly> = <jiggly> <package.RenameRuleTestPackage.gangly> <RenameRuleTestPackage.gangly> <Test.gangly> <com.rename.rule.Test.gangly<caret>>;

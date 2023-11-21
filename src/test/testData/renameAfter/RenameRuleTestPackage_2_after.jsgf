@@ -1,0 +1,6 @@
+#JSGF V1.0;
+grammar com.package.PackageRename;
+
+public <gangly> = <rule1>;
+<rule1> = test | tost;
+<other> = <gangly>;

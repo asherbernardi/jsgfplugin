@@ -14,7 +14,6 @@ import java.util.Map;
  * Handles quote typing and deleting.
  * @author asherbernardi
  */
-
 public class JsgfQuoteHandler implements QuoteHandler {
 
   @Override
@@ -45,7 +44,7 @@ public class JsgfQuoteHandler implements QuoteHandler {
       Document doc = iterator.getDocument();
       int lineEnd = doc.getLineEndOffset(doc.getLineNumber(offset));
       int lineStart = doc.getLineStartOffset(doc.getLineNumber(offset));
-      revertIterator(iterator, lineStart);
+      JsgfUtil.revertHighlighterIterator(iterator, lineStart);
       boolean inString = false;
       while (!iterator.atEnd() && iterator.getStart() < lineEnd) {
         if (iterator.getTokenType() == QUOTE) {
@@ -57,16 +56,8 @@ public class JsgfQuoteHandler implements QuoteHandler {
       // If we reach the end of a line while in a string, we have a non-close literal
       return result;
     } finally {
-      revertIterator(iterator, start);
+      JsgfUtil.revertHighlighterIterator(iterator, start);
     }
   }
 
-  private static void revertIterator(HighlighterIterator iterator, int targetStart) {
-    while (iterator.getStart() < targetStart) {
-      iterator.advance();
-    }
-    while (iterator.getStart() > targetStart || iterator.atEnd()) {
-      iterator.retreat();
-    }
-  }
 }

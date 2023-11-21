@@ -1,5 +1,6 @@
 package com.asherbernardi.jsgfplugin.psi.stub;
 
+import com.asherbernardi.jsgfplugin.psi.JsgfFileElementType;
 import com.asherbernardi.jsgfplugin.psi.JsgfRuleImportName;
 import com.intellij.psi.stubs.StubIndexKey;
 import com.intellij.psi.tree.IFileElementType;
@@ -14,17 +15,17 @@ import com.asherbernardi.jsgfplugin.psi.JsgfRuleDeclarationName;
  */
 public interface JsgfStubElementTypes {
 
-  IFileElementType FILE_ELEMENT_TYPE = new IStubFileElementType(JsgfLanguage.INSTANCE);
+  JsgfFileElementType FILE_ELEMENT_TYPE = new JsgfFileElementType();
 
   RuleDeclarationStubElementType RULE_DECLARATION_STUB_TYPE = new RuleDeclarationStubElementType();
   GrammarNameStubElementType GRAMMAR_NAME_STUB_TYPE = new GrammarNameStubElementType();
   ImportStubElementType IMPORT_STUB_TYPE = new ImportStubElementType();
 
   StubIndexKey<String, JsgfRuleDeclarationName> RULE_INDEX_KEY =
-      StubIndexKey.createIndexKey(RuleDeclarationStubElementType.ID);
+      StubIndexKey.createIndexKey(RULE_DECLARATION_STUB_TYPE.getExternalId());
   StubIndexKey<String, JsgfGrammarName> GRAMMAR_INDEX_KEY =
-      StubIndexKey.createIndexKey(GrammarNameStubElementType.ID);
+      StubIndexKey.createIndexKey(GRAMMAR_NAME_STUB_TYPE.getExternalId());
   StubIndexKey<String, JsgfRuleImportName> IMPORT_INDEX_KEY =
-      StubIndexKey.createIndexKey(ImportStubElementType.ID);
+      StubIndexKey.createIndexKey(IMPORT_STUB_TYPE.getExternalId());
 
 }

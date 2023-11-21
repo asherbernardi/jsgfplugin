@@ -10,7 +10,6 @@ import com.intellij.psi.util.PsiTreeUtil;
 import static com.asherbernardi.jsgfplugin.psi.JsgfBnfTypes.*;
 import com.asherbernardi.jsgfplugin.psi.*;
 import com.asherbernardi.jsgfplugin.psi.reference.OtherFileReferencePair;
-import com.intellij.psi.PsiReference;
 import com.intellij.psi.search.SearchScope;
 import com.asherbernardi.jsgfplugin.psi.stub.ImportStub;
 import com.intellij.psi.stubs.IStubElementType;
@@ -61,19 +60,12 @@ public class JsgfRuleImportNameImpl extends RuleImportNameMixin implements JsgfR
   }
 
   @Override
-  @NotNull
-  public PsiReference[] getReferences() {
-    return JsgfPsiImplInjections.getReferences(this);
-  }
-
-  @Override
   public OtherFileReferencePair getReferencePair() {
     return JsgfPsiImplInjections.getReferencePair(this);
   }
 
   @Override
-  @NotNull
-  public SearchScope getUseScope() {
+  public @NotNull SearchScope getUseScope() {
     return JsgfPsiImplInjections.getUseScope(this);
   }
 

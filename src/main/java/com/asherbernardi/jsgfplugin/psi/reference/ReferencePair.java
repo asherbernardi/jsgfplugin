@@ -7,7 +7,6 @@ public abstract class ReferencePair<G extends PsiReference, R extends PsiReferen
 
   private final G grammarReference;
   private final R ruleReference;
-  private static final PsiReference[] EMPTY = new PsiReference[0];
 
   public ReferencePair(@Nullable G grammarReference, @Nullable R ruleReference) {
     this.grammarReference = grammarReference;
@@ -26,7 +25,7 @@ public abstract class ReferencePair<G extends PsiReference, R extends PsiReferen
 
   public PsiReference[] getReferenceArray() {
     if (getGrammarReference() == null && getRuleReference() == null) {
-      return EMPTY;
+      return PsiReference.EMPTY_ARRAY;
     } else if (getGrammarReference() == null) {
       return new PsiReference[]{getRuleReference()};
     } else if (getRuleReference() == null) {

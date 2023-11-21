@@ -35,7 +35,7 @@ public class RuleStubIndex extends StringStubIndexExtension<JsgfRuleDeclarationN
     if (!(file instanceof JsgfFile)) return new HashSet<>();
     Set<String> allKeys = new HashSet<>();
     StubIndex.getInstance().processAllKeys(JsgfStubElementTypes.RULE_INDEX_KEY,
-        Processors.cancelableCollectProcessor(allKeys), GlobalSearchScope.fileScope(file), null);
+        Processors.cancelableCollectProcessor(allKeys), GlobalSearchScope.fileScope(file.getOriginalFile()), null);
     return allKeys;
   }
 
@@ -43,7 +43,7 @@ public class RuleStubIndex extends StringStubIndexExtension<JsgfRuleDeclarationN
   public static Collection<JsgfRuleDeclarationName> getRulesInFile(PsiFile file) {
     Set<JsgfRuleDeclarationName> imports = new HashSet<>();
     for (String key : getRuleNamesInFile(file)) {
-      imports.addAll(INSTANCE.get(key, file.getProject(), GlobalSearchScope.fileScope(file)));
+      imports.addAll(INSTANCE.get(key, file.getProject(), GlobalSearchScope.fileScope(file.getOriginalFile())));
     }
     return imports;
   }

@@ -14,6 +14,6 @@ public abstract class RuleDefinitionMixin extends ASTWrapperPsiElement implement
 
   @Override
   public String toString() {
-    return "RuleDeclaration: <" + getRuleName() + ">" + (isPublicRule() ? " (public)" : "");
+    return "RuleDefinition: <" + getRuleName() + ">" + (isPublicRule() ? " (public)" : "");
   }
 }

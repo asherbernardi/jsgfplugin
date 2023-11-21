@@ -10,6 +10,6 @@ public interface JsgfImportStatement extends PsiElement {
   @Nullable
   JsgfRuleImport getRuleImport();
 
-  JsgfRuleImportName getRuleImportName();
+  @Nullable JsgfRuleImportName getRuleImportName();
 
 }

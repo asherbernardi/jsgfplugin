@@ -32,4 +32,20 @@ public class JsgfUnaryOperationExpImpl extends UnaryOperationMixin implements Js
     return notNullChild(PsiTreeUtil.getChildOfType(this, JsgfExpansion.class));
   }
 
+  @Override
+  @Nullable
+  public JsgfTag getTag() {
+    return PsiTreeUtil.getChildOfType(this, JsgfTag.class);
+  }
+
+  @Override
+  public boolean isStar() {
+    return JsgfPsiImplInjections.isStar(this);
+  }
+
+  @Override
+  public boolean isPlus() {
+    return JsgfPsiImplInjections.isPlus(this);
+  }
+
 }

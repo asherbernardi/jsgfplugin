@@ -15,8 +15,7 @@ public interface JsgfRuleDeclarationName extends RuleName, StubBasedPsiElement<R
   @NotNull
   PsiElement getRuleNameIdentifier();
 
-  @NotNull
-  String getName();
+  @NotNull String getName();
 
   PsiElement setName(@NotNull String name) throws IncorrectOperationException;
 
@@ -24,10 +23,8 @@ public interface JsgfRuleDeclarationName extends RuleName, StubBasedPsiElement<R
 
   ItemPresentation getPresentation();
 
-  @Nullable
-  PsiElement getNameIdentifier();
+  @Nullable PsiElement getNameIdentifier();
 
-  @NotNull
-  SearchScope getUseScope();
+  @NotNull SearchScope getUseScope();
 
 }

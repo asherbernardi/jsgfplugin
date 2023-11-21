@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij' version '1.5.2'
+    id 'org.jetbrains.intellij' version '1.10.0'
 }
 
 group 'com.asherbernardi'
@@ -30,10 +30,20 @@ patchPluginXml {
     <li>Improved file name resolution for imports
 </ul>
 ''')
-    sinceBuild.set("203")
+    sinceBuild.set("232")
 }
 
-sourceCompatibility = 11
+sourceCompatibility = JavaVersion.VERSION_17
+
+// See https://github.com/JetBrains/gradle-intellij-plugin/
+intellij {
+    version.set('2023.2.5')
+    downloadSources = true
+}
+
+instrumentCode {
+    compilerClassPathFromMaven
+}
 
 repositories {
     mavenCentral()
@@ -47,16 +57,9 @@ dependencies {
 }
 
 test {
-    systemProperty "idea.home.path", "C:/Program Files/JetBrains/IntelliJ IDEA Community Edition 2021.1"
     // Workaround for test failures https://youtrack.jetbrains.com/issue/IDEA-278926?_ga=2.196016364.1950444123.1643221178-2000276811.1643221178#focus=Comments-27-5561012.0-0
     scanForTestClasses false
     include "**/*Test.class"
-}
-
-// See https://github.com/JetBrains/gradle-intellij-plugin/
-intellij {
-    version.set('2022.1')
-    downloadSources = true
 }
 
 publishPlugin {

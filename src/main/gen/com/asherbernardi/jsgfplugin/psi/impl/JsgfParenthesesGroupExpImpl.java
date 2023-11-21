@@ -27,4 +27,10 @@ public class JsgfParenthesesGroupExpImpl extends JsgfGroupExpImpl implements Jsg
     else super.accept(visitor);
   }
 
+  @Override
+  @Nullable
+  public JsgfExpansion getExpansion() {
+    return PsiTreeUtil.getChildOfType(this, JsgfExpansion.class);
+  }
+
 }

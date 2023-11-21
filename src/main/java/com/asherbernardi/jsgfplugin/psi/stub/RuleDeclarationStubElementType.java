@@ -11,9 +11,7 @@ import com.asherbernardi.jsgfplugin.psi.impl.JsgfRuleDeclarationNameImpl;
 import java.io.IOException;
 import org.jetbrains.annotations.NotNull;
 
-public class RuleDeclarationStubElementType extends IStubElementType<RuleDeclarationStub, JsgfRuleDeclarationName> {
-
-  public static final String ID = "jsgf.rule";
+public class RuleDeclarationStubElementType extends JsgfStubElementType<RuleDeclarationStub, JsgfRuleDeclarationName> {
 
   public RuleDeclarationStubElementType() {
     super("RULE", JsgfLanguage.INSTANCE);
@@ -28,11 +26,6 @@ public class RuleDeclarationStubElementType extends IStubElementType<RuleDeclara
   public @NotNull RuleDeclarationStub createStub(@NotNull JsgfRuleDeclarationName psi,
       StubElement<?> parentStub) {
     return new RuleDeclarationStubImpl(parentStub, psi.getText(), psi.isPublicRule());
-  }
-
-  @Override
-  public @NotNull String getExternalId() {
-    return ID;
   }
 
   @Override

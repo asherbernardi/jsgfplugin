@@ -36,14 +36,13 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
   }
 
   public static final TokenSet[] EXTENDS_SETS_ = new TokenSet[] {
-    create_token_set_(EXPANSION, EXPANSION_WITH_TAG_EXP, OPTIONAL_GROUP_EXP, PARENTHESES_GROUP_EXP,
-      RULE_REFERENCE_EXP, SEQUENCE_EXP, STRING_EXP, TERMINAL_EXP,
-      UNARY_OPERATION_EXP, UNWEIGHTED_ALTERNATIVES_EXP, WEIGHTED_ALTERNATIVES_EXP),
+    create_token_set_(EXPANSION, OPTIONAL_GROUP_EXP, PARENTHESES_GROUP_EXP, RULE_REFERENCE_EXP,
+      SEQUENCE_EXP, STRING_EXP, TERMINAL_EXP, UNARY_OPERATION_EXP,
+      UNWEIGHTED_ALTERNATIVES_EXP, WEIGHTED_ALTERNATIVES_EXP),
   };
 
   /* ********************************************************** */
   // unary_operation_exp
-  //   | expansion_with_tag_exp
   //   | primary
   static boolean expansion_for_sequence_exp(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "expansion_for_sequence_exp")) return false;
@@ -51,7 +50,6 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
     Marker m = enter_section_(b, l, _NONE_, null, "<expansion>");
     r = expansion(b, l + 1, 1);
     if (!r) r = expansion(b, l + 1, 2);
-    if (!r) r = expansion(b, l + 1, 3);
     exit_section_(b, l, m, r, false, null);
     return r;
   }
@@ -59,7 +57,6 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
   /* ********************************************************** */
   // sequence_exp
   //   | unary_operation_exp
-  //   | expansion_with_tag_exp
   //   | primary
   static boolean expansion_for_weighted_alt(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "expansion_for_weighted_alt")) return false;
@@ -67,7 +64,6 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
     r = expansion(b, l + 1, 0);
     if (!r) r = expansion(b, l + 1, 1);
     if (!r) r = expansion(b, l + 1, 2);
-    if (!r) r = expansion(b, l + 1, 3);
     return r;
   }
 
@@ -96,7 +92,7 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // !(IMPORT|PUBLIC|ruleDeclaration EQUALS)
+  // !(IMPORT|PUBLIC|LANGLE)
   static boolean grammarDeclaration_top_recover(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "grammarDeclaration_top_recover")) return false;
     boolean r;
@@ -106,26 +102,13 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // IMPORT|PUBLIC|ruleDeclaration EQUALS
+  // IMPORT|PUBLIC|LANGLE
   private static boolean grammarDeclaration_top_recover_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "grammarDeclaration_top_recover_0")) return false;
     boolean r;
-    Marker m = enter_section_(b);
     r = consumeToken(b, IMPORT);
     if (!r) r = consumeToken(b, PUBLIC);
-    if (!r) r = grammarDeclaration_top_recover_0_2(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // ruleDeclaration EQUALS
-  private static boolean grammarDeclaration_top_recover_0_2(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "grammarDeclaration_top_recover_0_2")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = ruleDeclaration(b, l + 1);
-    r = r && consumeToken(b, EQUALS);
-    exit_section_(b, m, null, r);
+    if (!r) r = consumeToken(b, LANGLE);
     return r;
   }
 
@@ -213,7 +196,7 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // !(PUBLIC|ruleDeclaration EQUALS)
+  // !(PUBLIC|LANGLE)
   static boolean header_grammar_imports_recover(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "header_grammar_imports_recover")) return false;
     boolean r;
@@ -223,25 +206,12 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // PUBLIC|ruleDeclaration EQUALS
+  // PUBLIC|LANGLE
   private static boolean header_grammar_imports_recover_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "header_grammar_imports_recover_0")) return false;
     boolean r;
-    Marker m = enter_section_(b);
     r = consumeToken(b, PUBLIC);
-    if (!r) r = header_grammar_imports_recover_0_1(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // ruleDeclaration EQUALS
-  private static boolean header_grammar_imports_recover_0_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "header_grammar_imports_recover_0_1")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = ruleDeclaration(b, l + 1);
-    r = r && consumeToken(b, EQUALS);
-    exit_section_(b, m, null, r);
+    if (!r) r = consumeToken(b, LANGLE);
     return r;
   }
 
@@ -312,7 +282,7 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // !(GRAMMAR|IMPORT|PUBLIC|ruleDeclaration)
+  // !(GRAMMAR|IMPORT|PUBLIC|LANGLE)
   static boolean header_top_recover(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "header_top_recover")) return false;
     boolean r;
@@ -322,14 +292,14 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // GRAMMAR|IMPORT|PUBLIC|ruleDeclaration
+  // GRAMMAR|IMPORT|PUBLIC|LANGLE
   private static boolean header_top_recover_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "header_top_recover_0")) return false;
     boolean r;
     r = consumeToken(b, GRAMMAR);
     if (!r) r = consumeToken(b, IMPORT);
     if (!r) r = consumeToken(b, PUBLIC);
-    if (!r) r = ruleDeclaration(b, l + 1);
+    if (!r) r = consumeToken(b, LANGLE);
     return r;
   }
 
@@ -371,7 +341,7 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // !(IMPORT|PUBLIC|ruleDeclaration EQUALS)
+  // !(IMPORT|PUBLIC|LANGLE)
   static boolean importStatement_loop_recover(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "importStatement_loop_recover")) return false;
     boolean r;
@@ -381,31 +351,18 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // IMPORT|PUBLIC|ruleDeclaration EQUALS
+  // IMPORT|PUBLIC|LANGLE
   private static boolean importStatement_loop_recover_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "importStatement_loop_recover_0")) return false;
     boolean r;
-    Marker m = enter_section_(b);
     r = consumeToken(b, IMPORT);
     if (!r) r = consumeToken(b, PUBLIC);
-    if (!r) r = importStatement_loop_recover_0_2(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // ruleDeclaration EQUALS
-  private static boolean importStatement_loop_recover_0_2(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "importStatement_loop_recover_0_2")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = ruleDeclaration(b, l + 1);
-    r = r && consumeToken(b, EQUALS);
-    exit_section_(b, m, null, r);
+    if (!r) r = consumeToken(b, LANGLE);
     return r;
   }
 
   /* ********************************************************** */
-  // !(SEMICOLON|IMPORT|PUBLIC|ruleDeclaration EQUALS)
+  // !(SEMICOLON|IMPORT|PUBLIC|LANGLE)
   static boolean importStatement_recover(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "importStatement_recover")) return false;
     boolean r;
@@ -415,27 +372,14 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // SEMICOLON|IMPORT|PUBLIC|ruleDeclaration EQUALS
+  // SEMICOLON|IMPORT|PUBLIC|LANGLE
   private static boolean importStatement_recover_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "importStatement_recover_0")) return false;
     boolean r;
-    Marker m = enter_section_(b);
     r = consumeToken(b, SEMICOLON);
     if (!r) r = consumeToken(b, IMPORT);
     if (!r) r = consumeToken(b, PUBLIC);
-    if (!r) r = importStatement_recover_0_3(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // ruleDeclaration EQUALS
-  private static boolean importStatement_recover_0_3(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "importStatement_recover_0_3")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = ruleDeclaration(b, l + 1);
-    r = r && consumeToken(b, EQUALS);
-    exit_section_(b, m, null, r);
+    if (!r) r = consumeToken(b, LANGLE);
     return r;
   }
 
@@ -485,7 +429,7 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // !(EQUALS|RANGLE|SEMICOLON|PUBLIC)
+  // !(EQUALS|RANGLE|SEMICOLON|PUBLIC|LBRACE)
   static boolean ruleDeclaration_recover(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "ruleDeclaration_recover")) return false;
     boolean r;
@@ -495,7 +439,7 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // EQUALS|RANGLE|SEMICOLON|PUBLIC
+  // EQUALS|RANGLE|SEMICOLON|PUBLIC|LBRACE
   private static boolean ruleDeclaration_recover_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "ruleDeclaration_recover_0")) return false;
     boolean r;
@@ -503,6 +447,7 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
     if (!r) r = consumeToken(b, RANGLE);
     if (!r) r = consumeToken(b, SEMICOLON);
     if (!r) r = consumeToken(b, PUBLIC);
+    if (!r) r = consumeToken(b, LBRACE);
     return r;
   }
 
@@ -533,7 +478,7 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // !(PUBLIC|ruleDeclaration EQUALS)
+  // !(PUBLIC|LANGLE)
   static boolean ruleDefinition_loop_recover(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "ruleDefinition_loop_recover")) return false;
     boolean r;
@@ -543,25 +488,12 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // PUBLIC|ruleDeclaration EQUALS
+  // PUBLIC|LANGLE
   private static boolean ruleDefinition_loop_recover_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "ruleDefinition_loop_recover_0")) return false;
     boolean r;
-    Marker m = enter_section_(b);
     r = consumeToken(b, PUBLIC);
-    if (!r) r = ruleDefinition_loop_recover_0_1(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // ruleDeclaration EQUALS
-  private static boolean ruleDefinition_loop_recover_0_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "ruleDefinition_loop_recover_0_1")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = ruleDeclaration(b, l + 1);
-    r = r && consumeToken(b, EQUALS);
-    exit_section_(b, m, null, r);
+    if (!r) r = consumeToken(b, LANGLE);
     return r;
   }
 
@@ -616,13 +548,12 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
   // RULE_NAME_IDENTIFIER (PERIOD RULE_NAME_IDENTIFIER)* [PERIOD STAR]
   public static boolean ruleImportName(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "ruleImportName")) return false;
-    if (!nextTokenIs(b, RULE_NAME_IDENTIFIER)) return false;
     boolean r;
-    Marker m = enter_section_(b);
+    Marker m = enter_section_(b, l, _NONE_, RULE_IMPORT_NAME, "<rule import name>");
     r = consumeToken(b, RULE_NAME_IDENTIFIER);
     r = r && ruleImportName_1(b, l + 1);
     r = r && ruleImportName_2(b, l + 1);
-    exit_section_(b, m, RULE_IMPORT_NAME, r);
+    exit_section_(b, l, m, r, false, JsgfBnfParser::ruleImport_recover);
     return r;
   }
 
@@ -655,7 +586,7 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // !(RANGLE|SEMICOLON|IMPORT|PUBLIC|ruleDeclaration EQUALS)
+  // !(RANGLE|SEMICOLON|IMPORT|PUBLIC|LANGLE)
   static boolean ruleImport_recover(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "ruleImport_recover")) return false;
     boolean r;
@@ -665,28 +596,15 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // RANGLE|SEMICOLON|IMPORT|PUBLIC|ruleDeclaration EQUALS
+  // RANGLE|SEMICOLON|IMPORT|PUBLIC|LANGLE
   private static boolean ruleImport_recover_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "ruleImport_recover_0")) return false;
     boolean r;
-    Marker m = enter_section_(b);
     r = consumeToken(b, RANGLE);
     if (!r) r = consumeToken(b, SEMICOLON);
     if (!r) r = consumeToken(b, IMPORT);
     if (!r) r = consumeToken(b, PUBLIC);
-    if (!r) r = ruleImport_recover_0_4(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // ruleDeclaration EQUALS
-  private static boolean ruleImport_recover_0_4(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "ruleImport_recover_0_4")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = ruleDeclaration(b, l + 1);
-    r = r && consumeToken(b, EQUALS);
-    exit_section_(b, m, null, r);
+    if (!r) r = consumeToken(b, LANGLE);
     return r;
   }
 
@@ -892,8 +810,7 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
   // 0: N_ARY(unweighted_alternatives_exp) ATOM(weighted_alternatives_exp)
   // 1: POSTFIX(sequence_exp)
   // 2: POSTFIX(unary_operation_exp)
-  // 3: POSTFIX(expansion_with_tag_exp)
-  // 4: ATOM(terminal_exp) ATOM(string_exp) ATOM(ruleReference_exp) PREFIX(parentheses_group_exp)
+  // 3: ATOM(terminal_exp) ATOM(string_exp) ATOM(ruleReference_exp) PREFIX(parentheses_group_exp)
   //    PREFIX(optional_group_exp)
   public static boolean expansion(PsiBuilder b, int l, int g) {
     if (!recursion_guard_(b, l, "expansion")) return false;
@@ -931,10 +848,6 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
       else if (g < 2 && unary_operation_exp_0(b, l + 1)) {
         r = true;
         exit_section_(b, l, m, UNARY_OPERATION_EXP, r, true, null);
-      }
-      else if (g < 3 && tag(b, l + 1)) {
-        r = true;
-        exit_section_(b, l, m, EXPANSION_WITH_TAG_EXP, r, true, null);
       }
       else {
         exit_section_(b, l, m, null, false, false, null);
@@ -999,12 +912,13 @@ public class JsgfBnfParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // STAR|PLUS
+  // STAR|PLUS|tag
   private static boolean unary_operation_exp_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "unary_operation_exp_0")) return false;
     boolean r;
     r = consumeTokenSmart(b, STAR);
     if (!r) r = consumeTokenSmart(b, PLUS);
+    if (!r) r = tag(b, l + 1);
     return r;
   }
 

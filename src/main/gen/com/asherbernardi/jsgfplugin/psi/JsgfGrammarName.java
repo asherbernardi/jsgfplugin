@@ -14,17 +14,14 @@ public interface JsgfGrammarName extends GrammarName, StubBasedPsiElement<Gramma
   @NotNull
   PsiElement getIdentifier();
 
-  @NotNull
-  String getName();
+  @NotNull String getName();
 
   PsiElement setName(@NotNull String newName);
 
   ItemPresentation getPresentation();
 
-  @NotNull
-  SearchScope getUseScope();
+  @NotNull SearchScope getUseScope();
 
-  @Nullable
-  PsiElement getNameIdentifier();
+  @Nullable PsiElement getNameIdentifier();
 
 }

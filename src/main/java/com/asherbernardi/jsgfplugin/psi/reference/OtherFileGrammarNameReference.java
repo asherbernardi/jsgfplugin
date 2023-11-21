@@ -56,20 +56,4 @@ public class OtherFileGrammarNameReference extends PsiReferenceBase<JsgfRuleImpo
       return resolveResults[0].getElement();
     return null;
   }
-
-  @NotNull
-  @Override
-  public Object[] getVariants() {
-    List<JsgfFile> files = JsgfUtil.findFilesByPackage(getElement());
-    List<LookupElement> variants = new ArrayList<>();
-    for (final JsgfFile file : files) {
-      if (file.getGrammarName() != null) {
-        variants.add(LookupElementBuilder
-            .create(file.getGrammarName().getFQGN()).withIcon(JsgfIcons.FILE)
-            .withTypeText(file.getName())
-        );
-      }
-    }
-    return variants.toArray();
-  }
 }
