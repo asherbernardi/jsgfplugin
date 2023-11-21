@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.asherbernardi'
-version '2.2.0'
+version '2.3.0'
 
 patchPluginXml {
     pluginDescription.set('''
@@ -24,10 +24,10 @@ patchPluginXml {
 </ul>''')
     changeNotes.set('''
 <ul>
-    <li>Support new Idea version 221.*
+    <li>Support new Idea version 223.*
     <li>Improved parsing and formatting
-    <li>Reference resolution for grammar names
-    <li>Improved file name resolution for imports
+    <li>Improved referencing and code completion
+    <li>Improved file name resolution for imports (Must specific sources roots to properly resolve by file path)
 </ul>
 ''')
     sinceBuild.set("232")
