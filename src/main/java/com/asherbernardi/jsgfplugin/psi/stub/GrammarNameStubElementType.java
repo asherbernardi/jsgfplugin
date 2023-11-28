@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 public class GrammarNameStubElementType extends JsgfStubElementType<GrammarNameStub, JsgfGrammarName> {
 
   public GrammarNameStubElementType() {
-    super("GRAMMAR", JsgfLanguage.INSTANCE);
+    super("GRAMMAR_NAME_STUB", JsgfLanguage.INSTANCE);
   }
 
   @Override

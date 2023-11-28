@@ -27,6 +27,6 @@ public class RuleReferenceManipulator extends AbstractElementManipulator<JsgfRul
     } else {
       throw new IncorrectOperationException("Wrong range: " + range + " to replace import name: " + element.getText());
     }
-    return (JsgfRuleReferenceName) element.setRuleName(newQualifiedName);
+    return (JsgfRuleReferenceName) element.setFQRN(newQualifiedName);
   }
 }

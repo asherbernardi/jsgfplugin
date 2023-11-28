@@ -1,6 +1,7 @@
 package com.asherbernardi.jsgfplugin.psi.reference;
 
 import com.asherbernardi.jsgfplugin.JsgfIcons;
+import com.asherbernardi.jsgfplugin.JsgfLanguage;
 import com.asherbernardi.jsgfplugin.JsgfUtil;
 import com.asherbernardi.jsgfplugin.psi.JsgfFile;
 import com.asherbernardi.jsgfplugin.psi.JsgfRuleDeclarationName;
@@ -14,50 +15,52 @@ import com.intellij.psi.PsiReferenceBase;
 import com.asherbernardi.jsgfplugin.psi.JsgfRuleImportName;
 import com.asherbernardi.jsgfplugin.psi.RuleName;
 import com.intellij.psi.ResolveResult;
-import com.intellij.psi.impl.source.resolve.ResolveCache;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.util.IncorrectOperationException;
 import java.util.ArrayList;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class OtherFileRuleNameReference extends PsiReferenceBase<JsgfRuleImportName> implements
+public class OtherFileRuleNameReference extends JsgfDefaultCachedReference<JsgfRuleImportName> implements
     PsiPolyVariantReference {
 
-  private final String unqualifiedName;
-  private final String fullyQualifiedGrammarName;
-
-  public OtherFileRuleNameReference(@NotNull JsgfRuleImportName element, TextRange range) {
+  public OtherFileRuleNameReference(@NotNull JsgfRuleImportName element, TextRange range,
+      @Nullable OtherFileGrammarNameReference grammarNameReference) {
     super(element, range);
-    // Careful of "IntellijIdeaRulezzz" which is used to make sure the autocomplete takes context into account
-    // https://intellij-support.jetbrains.com/hc/en-us/community/posts/206752355-The-dreaded-IntellijIdeaRulezzz-string
-    unqualifiedName = element.getUnqualifiedRuleName();
-    fullyQualifiedGrammarName = element.getFullyQualifiedGrammarName();
   }
 
-  public String getUnqualifiedName() {
-    return unqualifiedName;
-  }
-
-  public String getFullyQualifiedGrammarName() {
-    return fullyQualifiedGrammarName;
-  }
-
-  @NotNull
-  protected abstract List<JsgfRuleDeclarationName> getRulesByPackage(boolean publicOnly);
-
-  @NotNull
-  protected abstract List<JsgfRuleDeclarationName> getRules(boolean publicOnly);
-
-  public boolean canResolve() {
-    return resolve() != null;
-  }
-
-  @NotNull
   @Override
-  public ResolveResult[] multiResolve(boolean incompleteCode) {
-    PsiFile file = getElement().getContainingFile();
-    return ResolveCache.getInstance(file.getProject()).resolveWithCaching(this, MyResolver.INSTANCE, false, false, file);
+  protected CachedValueProvider<ResolveResult[]> getCachedValueProvider(JsgfRuleImportName element) {
+    return new MyCachedValueProvider(element);
+  }
+
+  private static class MyCachedValueProvider implements CachedValueProvider<ResolveResult[]> {
+
+    private final JsgfRuleImportName element;
+
+    MyCachedValueProvider(JsgfRuleImportName element) {
+      this.element = element;
+    }
+
+    @Override
+    public @Nullable Result<ResolveResult[]> compute() {
+      List<JsgfResolveResultRule> results = new ArrayList<>();
+      List<JsgfRuleDeclarationName> refs = JsgfUtil.resolveImportRules(element);
+      if (refs.isEmpty()) {
+        return new Result<>(ResolveResult.EMPTY_ARRAY,
+            // For broken references, re-compute at any change
+            PsiModificationTracker.getInstance(element.getProject()).forLanguage(JsgfLanguage.INSTANCE));
+      }
+      List<Object> dependencies = new ArrayList<>();
+      dependencies.add(element);
+      for (JsgfRuleDeclarationName rule : refs) {
+        results.add(new JsgfResolveResultRule(rule, false));
+        dependencies.add(rule);
+      }
+      return new Result<>(results.toArray(new JsgfResolveResultRule[0]), dependencies.toArray());
+    }
   }
 
   @Nullable
@@ -83,14 +86,22 @@ public abstract class OtherFileRuleNameReference extends PsiReferenceBase<JsgfRu
   @NotNull
   @Override
   public Object @NotNull [] getVariants() {
-    List<JsgfRuleDeclarationName> names = getRulesByPackage(true);
+    OtherFileGrammarNameReference grammarRef = myElement.getReferencePair().getGrammarReference();
+    List<JsgfRuleDeclarationName> names = new ArrayList<>();
     List<LookupElement> variants = new ArrayList<>();
-    for (final RuleName ref : names) {
-      if (ref.getRuleName() != null && !ref.getRuleName().isEmpty()) {
-        variants.add(LookupElementBuilder
-            .create(ref.getRuleName()).withIcon(JsgfIcons.FILE)
-            .withTypeText(ref.getContainingFile().getName())
-        );
+    if (grammarRef != null) {
+      ResolveResult[] resolves = grammarRef.multiResolve(false);
+      for (ResolveResult resolve : resolves) {
+        JsgfFile importFile = (JsgfFile) resolve.getElement().getContainingFile().getOriginalFile();
+        names.addAll(JsgfUtil.findRulesInFile(importFile, true));
+      }
+      for (final RuleName ref : names) {
+        if (ref.getRuleName() != null && !ref.getRuleName().isEmpty()) {
+          variants.add(LookupElementBuilder
+              .create(ref.getRuleName()).withIcon(JsgfIcons.FILE)
+              .withTypeText(ref.getContainingFile().getName())
+          );
+        }
       }
     }
     if (!names.isEmpty()) {
@@ -102,19 +113,5 @@ public abstract class OtherFileRuleNameReference extends PsiReferenceBase<JsgfRu
       variants.addAll(JsgfUtil.allFilesAsImportVariants(getElement()));
     }
     return variants.toArray();
-  }
-
-  private static class MyResolver implements ResolveCache.PolyVariantContextResolver<OtherFileRuleNameReference> {
-    static final MyResolver INSTANCE = new MyResolver();
-
-    @Override
-    public ResolveResult @NotNull [] resolve(@NotNull OtherFileRuleNameReference ref, @NotNull PsiFile containingFile, boolean incompleteCode) {
-      List<JsgfResolveResultRule> results = new ArrayList<>();
-      List<JsgfRuleDeclarationName> refs = ref.getRules(false);
-      for (JsgfRuleDeclarationName rule : refs) {
-        results.add(new JsgfResolveResultRule(rule, false));
-      }
-      return results.toArray(new JsgfResolveResultRule[0]);
-    }
   }
 }

@@ -9,8 +9,6 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static com.asherbernardi.jsgfplugin.psi.JsgfBnfTypes.*;
 import com.asherbernardi.jsgfplugin.psi.*;
-import com.intellij.navigation.ItemPresentation;
-import com.intellij.psi.search.SearchScope;
 import com.asherbernardi.jsgfplugin.psi.stub.GrammarNameStub;
 import com.intellij.psi.stubs.IStubElementType;
 
@@ -38,31 +36,6 @@ public class JsgfGrammarNameImpl extends GrammarNameMixin implements JsgfGrammar
   @NotNull
   public PsiElement getIdentifier() {
     return notNullChild(findChildByType(IDENTIFIER));
-  }
-
-  @Override
-  public @NotNull String getName() {
-    return JsgfPsiImplInjections.getName(this);
-  }
-
-  @Override
-  public PsiElement setName(@NotNull String newName) {
-    return JsgfPsiImplInjections.setName(this, newName);
-  }
-
-  @Override
-  public ItemPresentation getPresentation() {
-    return JsgfPsiImplInjections.getPresentation(this);
-  }
-
-  @Override
-  public @NotNull SearchScope getUseScope() {
-    return JsgfPsiImplInjections.getUseScope(this);
-  }
-
-  @Override
-  public @Nullable PsiElement getNameIdentifier() {
-    return JsgfPsiImplInjections.getNameIdentifier(this);
   }
 
 }

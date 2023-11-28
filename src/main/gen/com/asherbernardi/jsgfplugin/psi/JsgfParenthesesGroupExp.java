@@ -7,7 +7,4 @@ import com.intellij.psi.PsiElement;
 
 public interface JsgfParenthesesGroupExp extends JsgfGroupExp {
 
-  @Nullable
-  JsgfExpansion getExpansion();
-
 }

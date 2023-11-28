@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.asherbernardi'
-version '2.3.0'
+version '2.4.0'
 
 patchPluginXml {
     pluginDescription.set('''

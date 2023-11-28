@@ -26,11 +26,11 @@ import org.jetbrains.annotations.NotNull;
 public class JsgfErrorAnnotator implements Annotator {
   @Override
   public void annotate(@NotNull final PsiElement element, @NotNull AnnotationHolder holder) {
-    String myText = element.getText();
-    TextRange myRange = element.getTextRange();
     // Mark errors for whitespace before/after rule names. I was not able to get parser to do
     // that automatically... It will ignore whitespace between the angle brackets and the rulename
     if (element instanceof RuleName) {
+      String myText = element.getText();
+      TextRange myRange = element.getTextRange();
       if (element.getNode().getTreeNext() == null
           || element.getNode().getTreeNext().getElementType() != JsgfBnfTypes.RANGLE) {
         holder.newAnnotation(HighlightSeverity.ERROR,
@@ -44,20 +44,23 @@ public class JsgfErrorAnnotator implements Annotator {
       }
     }
     // Mark rule declarations that have already been defined as an error
-    if (element instanceof JsgfRuleDeclarationName) {
-      JsgfRuleDeclarationName ruleName = (JsgfRuleDeclarationName) element;
-      if ("NULL".equals(ruleName.getRuleName()) || "VOID".equals(ruleName.getRuleName())) {
+    if (element instanceof JsgfRuleDeclarationName ruleDeclarationName) {
+      String myText = element.getText();
+      TextRange myRange = element.getTextRange();
+      String ruleName = ruleDeclarationName.getRuleName();
+      if ("NULL".equals(ruleName) || "VOID".equals(ruleName)) {
         holder.newAnnotation(HighlightSeverity.ERROR,
-            "Cannot redefine reserved rule " + ruleName.getRuleName())
+                "Cannot redefine reserved rule " + ruleName)
             .range(myRange)
             .create();
       }
-      if (!JsgfUtil.isFirstDeclarationInFile(ruleName)) {
-        holder.newAnnotation(HighlightSeverity.ERROR, "Rule <" + ruleName.getRuleName() + "> already defined")
+      if (!JsgfUtil.isOnlyDeclarationInFile(ruleDeclarationName)) {
+        holder.newAnnotation(HighlightSeverity.ERROR,
+                "Rule <" + ruleName + "> already defined")
             .range(myRange)
             .create();
       }
-      if (!ruleName.isPublicRule() && ReferencesSearch.search(ruleName).findFirst() == null) {
+      if (!ruleDeclarationName.isPublicRule() && ReferencesSearch.search(ruleDeclarationName).findFirst() == null) {
         holder.newAnnotation(HighlightSeverity.WARNING,
                 "Unused rule")
             .range(myRange)
@@ -66,11 +69,13 @@ public class JsgfErrorAnnotator implements Annotator {
     }
     // Mark unresolved rule references
     if (element instanceof JsgfRuleReferenceName ruleRef) {
+      String myText = element.getText();
+      TextRange myRange = element.getTextRange();
       // reserved special rules
       if ("NULL".equals(myText) || "VOID".equals(myText))
         return;
       RuleNameReference ref = ruleRef.getReferencePair().getRuleReference();
-      JsgfResolveResultRule[] resolves = ref.multiResolve(false);
+      ResolveResult[] resolves = ref.multiResolve(false);
       if (resolves.length == 0) {
         holder.newAnnotation(HighlightSeverity.ERROR, "Cannot resolve reference to rule: "
             + myText)
@@ -80,8 +85,8 @@ public class JsgfErrorAnnotator implements Annotator {
       } else if (resolves.length > 1) {
         holder.newAnnotation(HighlightSeverity.WARNING, "Rule has more than one declaration: "
             + myText).range(myRange).create();
-      } else if (!resolves[0].isLocal()
-          && !resolves[0].getElement().isPublicRule()) {
+      } else if (!((JsgfResolveResultRule) resolves[0]).isLocal()
+          && !((JsgfResolveResultRule) resolves[0]).getElement().isPublicRule()) {
         holder.newAnnotation(HighlightSeverity.ERROR,
             "<" + myText + "> does not have public access in "
                 + resolves[0].getElement().getContainingFile().getName())
@@ -91,17 +96,20 @@ public class JsgfErrorAnnotator implements Annotator {
       }
     }
     if (element instanceof JsgfRuleImportName importName) {
+      String myText = element.getText();
       OtherFileReferencePair refPair = importName.getReferencePair();
       // Resolving the grammar name
       OtherFileGrammarNameReference refGrammar = refPair.getGrammarReference();
-      JsgfResolveResultGrammar[] resolvesGrammar = refGrammar != null ? refGrammar.multiResolve(false) : new JsgfResolveResultGrammar[0];
+      ResolveResult[] resolvesGrammar =
+          refGrammar != null ? refGrammar.multiResolve(false) : new JsgfResolveResultGrammar[0];
       if (resolvesGrammar.length == 0) {
         holder.newAnnotation(HighlightSeverity.ERROR, "Grammar not found for imported rule: "
             + importName.getSimpleGrammarName())
             .range(refGrammar != null ? refGrammar.getAbsoluteRange() : importName.getTextRange())
             .create();
       } else if (resolvesGrammar.length > 1) {
-        holder.newAnnotation(HighlightSeverity.WARNING, "Can't resolve multiple grammar name matches: "
+        holder.newAnnotation(HighlightSeverity.WARNING,
+                "Can't resolve multiple grammar name matches: "
                     + importName.getSimpleGrammarName())
             .range(refGrammar.getAbsoluteRange())
             .create();
@@ -124,7 +132,7 @@ public class JsgfErrorAnnotator implements Annotator {
         } else if (!((JsgfResolveResultRule) resolvesRule[0]).isLocal()
             && !((JsgfResolveResultRule) resolvesRule[0]).getElement().isPublicRule()) {
           holder.newAnnotation(HighlightSeverity.ERROR,
-              "<" + refRule.getUnqualifiedName() + "> does not have public access in "
+                  "<" + refRule.getElement().getUnqualifiedRuleName() + "> does not have public access in "
                   + resolvesRule[0].getElement().getContainingFile().getName())
               .textAttributes(JsgfHighlightType.BAD_REFERENCE.getTextAttributesKey())
               .range(refRule.getAbsoluteRange())
@@ -140,7 +148,7 @@ public class JsgfErrorAnnotator implements Annotator {
         if (header != null) {
           range = header.getTextRange();
         } else {
-          Matcher firstNonWS = Pattern.compile("\\S").matcher(myText);
+          Matcher firstNonWS = Pattern.compile("\\S").matcher(element.getText());
           if (firstNonWS.find()) {
             range = new TextRange(firstNonWS.start(), firstNonWS.start() + 1);
           }
@@ -156,7 +164,7 @@ public class JsgfErrorAnnotator implements Annotator {
       if (((JsgfGroupExp) element).getExpansion() == null) {
         holder.newAnnotation(HighlightSeverity.ERROR,
                 "Empty group")
-            .range(myRange)
+            .range(element.getTextRange())
             .create();
       }
     }

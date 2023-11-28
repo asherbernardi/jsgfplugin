@@ -23,13 +23,12 @@ public interface RuleName extends PsiElement, NavigatablePsiElement {
   }
 
   /**
-   * @return The fully qualified rule name of this rule. Equal to the text of the element
+   * @return The fully qualified rule name of this rule. Equal to the text of the element. When
+   * Possible use stubs to calculate this
    */
-  default String getFQRN() {
-    return getText();
-  }
+  String getFQRN();
 
-  default PsiElement setRuleName(@NotNull String newName) throws IncorrectOperationException {
+  default PsiElement setFQRN(@NotNull String newName) throws IncorrectOperationException {
     RuleName newRuleName = JsgfElementFactory.createRule(getProject(), newName);
     getNode().replaceAllChildrenToChildrenOf(newRuleName.getNode());
     return this;

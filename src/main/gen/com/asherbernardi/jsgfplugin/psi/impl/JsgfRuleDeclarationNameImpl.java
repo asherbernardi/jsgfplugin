@@ -9,9 +9,6 @@ import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static com.asherbernardi.jsgfplugin.psi.JsgfBnfTypes.*;
 import com.asherbernardi.jsgfplugin.psi.*;
-import com.intellij.navigation.ItemPresentation;
-import com.intellij.psi.search.SearchScope;
-import com.intellij.util.IncorrectOperationException;
 import com.asherbernardi.jsgfplugin.psi.stub.RuleDeclarationStub;
 import com.intellij.psi.stubs.IStubElementType;
 
@@ -42,33 +39,8 @@ public class JsgfRuleDeclarationNameImpl extends RuleDeclarationNameMixin implem
   }
 
   @Override
-  public @NotNull String getName() {
-    return JsgfPsiImplInjections.getName(this);
-  }
-
-  @Override
-  public PsiElement setName(@NotNull String name) throws IncorrectOperationException {
-    return JsgfPsiImplInjections.setName(this, name);
-  }
-
-  @Override
   public boolean isPublicRule() {
     return JsgfPsiImplInjections.isPublicRule(this);
-  }
-
-  @Override
-  public ItemPresentation getPresentation() {
-    return JsgfPsiImplInjections.getPresentation(this);
-  }
-
-  @Override
-  public @Nullable PsiElement getNameIdentifier() {
-    return JsgfPsiImplInjections.getNameIdentifier(this);
-  }
-
-  @Override
-  public @NotNull SearchScope getUseScope() {
-    return JsgfPsiImplInjections.getUseScope(this);
   }
 
 }

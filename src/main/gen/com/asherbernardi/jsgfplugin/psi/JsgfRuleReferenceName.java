@@ -5,12 +5,9 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 import com.asherbernardi.jsgfplugin.psi.reference.LocalReferencePair;
-import com.intellij.psi.search.SearchScope;
 
 public interface JsgfRuleReferenceName extends RuleName {
 
   @NotNull LocalReferencePair getReferencePair();
-
-  @NotNull SearchScope getUseScope();
 
 }

@@ -29,6 +29,6 @@ public class ImportNameManipulator extends AbstractElementManipulator<JsgfRuleIm
     } else {
       throw new IncorrectOperationException("Wrong range: " + range + " to replace import name: " + element.getText());
     }
-    return (JsgfRuleImportName) element.setRuleName(newQualifiedName);
+    return (JsgfRuleImportName) element.setFQRN(newQualifiedName);
   }
 }

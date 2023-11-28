@@ -27,10 +27,4 @@ public class JsgfOptionalGroupExpImpl extends JsgfGroupExpImpl implements JsgfOp
     else super.accept(visitor);
   }
 
-  @Override
-  @Nullable
-  public JsgfExpansion getExpansion() {
-    return PsiTreeUtil.getChildOfType(this, JsgfExpansion.class);
-  }
-
 }

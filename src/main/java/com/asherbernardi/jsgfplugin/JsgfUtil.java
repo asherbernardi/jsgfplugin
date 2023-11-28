@@ -21,15 +21,16 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.PsiReference;
+import com.intellij.psi.StubBasedPsiElement;
 import com.intellij.psi.impl.source.tree.CompositeElement;
 import com.intellij.psi.impl.source.tree.LeafElement;
 import com.intellij.psi.impl.source.tree.TreeElement;
 import com.intellij.psi.impl.source.tree.TreeElementVisitor;
-import com.intellij.psi.search.FileTypeIndex;
 import com.intellij.psi.search.GlobalSearchScope;
-import com.asherbernardi.jsgfplugin.psi.RuleName;
+import com.intellij.psi.stubs.StubElement;
 import com.intellij.psi.tree.IElementType;
 import com.intellij.psi.tree.TokenSet;
 import com.asherbernardi.jsgfplugin.psi.JsgfFile;
@@ -46,13 +47,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.TreeMap;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
@@ -104,17 +104,13 @@ public class JsgfUtil {
     return new ArrayList<>(rules);
   }
 
-  public static boolean isFirstDeclarationInFile(JsgfRuleDeclarationName ruleDecName) {
-    return isFirstDeclarationInFile((JsgfFile) ruleDecName.getContainingFile().getOriginalFile(), ruleDecName);
+  public static boolean isOnlyDeclarationInFile(JsgfRuleDeclarationName ruleDecName) {
+    return isOnlyDeclarationInFile((JsgfFile) ruleDecName.getContainingFile().getOriginalFile(), ruleDecName);
   }
 
-  public static boolean isFirstDeclarationInFile(JsgfFile file, JsgfRuleDeclarationName ruleDecName) {
-    List<JsgfRuleDeclarationName> rules = findRulesInFile(
-        file, ruleDecName.getRuleName());
-    JsgfRuleDeclarationName first = rules.stream().min(Comparator.comparingInt(PsiElement::getTextOffset)).orElse(null);
-    return first == null
-        || (first.getTextOffset() == ruleDecName.getFirstChild().getTextOffset()
-        && first.getRuleName().equals(ruleDecName.getRuleName()));
+  public static boolean isOnlyDeclarationInFile(JsgfFile file, JsgfRuleDeclarationName ruleDecName) {
+    List<JsgfRuleDeclarationName> rules = findRulesInFile(file, ruleDecName.getRuleName());
+    return rules.size() <= 1;
   }
 
   /**
@@ -122,37 +118,16 @@ public class JsgfUtil {
    * If '*' is imported, it adds all public rules in the file
    *
    * @param importName the importNameElement which we are trying to resolve
-   * @param publicOnly Whether or not the private rules should be added in the result
    * @return a list of RuleDeclarationNames
    */
   @NotNull
-  public static List<JsgfRuleDeclarationName> findImportRules(JsgfRuleImportName importName,
-      boolean publicOnly) {
+  public static List<JsgfRuleDeclarationName> resolveImportRules(JsgfRuleImportName importName) {
     List<JsgfRuleDeclarationName> result = new ArrayList<>();
     for (JsgfFile file : findFilesByPackage(importName)) {
       if (importName.isStarImport())
-        result.addAll(findRulesInFile(file, publicOnly));
+        result.addAll(findRulesInFile(file, false));
       else
-        result.addAll(findRulesInFile(file, importName.getUnqualifiedRuleName(), publicOnly));
-    }
-    return result;
-  }
-
-  /**
-   * Finds rules in all project files that the match the package of importName
-   * It is different from findImportRules() in that it finds all the rules in each file,
-   * not just rules which match.
-   *
-   * @param importName the importNameElement which we are trying to resolve
-   * @param publicOnly Whether or not the private rules should be added in the result
-   * @return a list of RuleDeclarationNames
-   */
-  @NotNull
-  public static List<JsgfRuleDeclarationName> findImportRulesByPackage(JsgfRuleImportName importName,
-      boolean publicOnly) {
-    List<JsgfRuleDeclarationName> result = new ArrayList<>();
-    for (JsgfFile file : findFilesByPackage(importName)) {
-      result.addAll(findRulesInFile(file, publicOnly));
+        result.addAll(findRulesInFile(file, importName.getUnqualifiedRuleName(), false));
     }
     return result;
   }
@@ -218,9 +193,9 @@ public class JsgfUtil {
     }
     // If we've gotten all the way through the package and grammar name
     if (i == dotSplit.length && currentFolder != null) {
-      JsgfFile file = (JsgfFile) PsiManager.getInstance(project).findFile(currentFolder);
-      if (file != null) {
-        matches.add(file);
+      PsiFile file = PsiManager.getInstance(project).findFile(currentFolder);
+      if (file != null && file.getFileType().equals(JsgfFileType.INSTANCE)) {
+        matches.add((JsgfFile) file);
       }
     }
   }
@@ -301,7 +276,7 @@ public class JsgfUtil {
     String fqgn = importName.getFullyQualifiedGrammarName();
     return fqgn != null && (
         (file.getGrammarName() != null && fqgn.equals(file.getGrammarName().getName()))
-            || JsgfPsiImplInjections.simpleGrammarNameFromFQGN(fqgn).equals(stripExtension(file.getName()))
+        || JsgfPsiImplInjections.simpleGrammarNameFromFQGN(fqgn).equals(stripExtension(file.getName()))
     );
   }
 
@@ -609,5 +584,14 @@ public class JsgfUtil {
       return (LeafElement) node;
     }
     return descendToLastLeaf(node.getLastChildNode());
+  }
+
+  public static <R, E extends StubBasedPsiElement<T>, T extends StubElement<E>> R
+  stubify(E element, Function<T, R> stubFunction, Function<E, R> psiFunction) {
+    T stub = element.getStub();
+    if (stub != null) {
+      return stubFunction.apply(stub);
+    }
+    return psiFunction.apply(element);
   }
 }

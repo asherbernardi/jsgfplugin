@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 public class ImportStubElementType extends JsgfStubElementType<ImportStub, JsgfRuleImportName> {
 
   public ImportStubElementType() {
-    super("IMPORT", JsgfLanguage.INSTANCE);
+    super("IMPORT_NAME_STUB", JsgfLanguage.INSTANCE);
   }
 
   @Override

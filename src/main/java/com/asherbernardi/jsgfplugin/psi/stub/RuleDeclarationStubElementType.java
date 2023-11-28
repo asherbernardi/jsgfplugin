@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 public class RuleDeclarationStubElementType extends JsgfStubElementType<RuleDeclarationStub, JsgfRuleDeclarationName> {
 
   public RuleDeclarationStubElementType() {
-    super("RULE", JsgfLanguage.INSTANCE);
+    super("RULE_DECLARATION_NAME_STUB", JsgfLanguage.INSTANCE);
   }
 
   @Override

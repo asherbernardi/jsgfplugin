@@ -27,9 +27,9 @@ public class JsgfGroupExpImpl extends GroupMixin implements JsgfGroupExp {
   }
 
   @Override
-  @NotNull
+  @Nullable
   public JsgfExpansion getExpansion() {
-    return notNullChild(PsiTreeUtil.getChildOfType(this, JsgfExpansion.class));
+    return PsiTreeUtil.getChildOfType(this, JsgfExpansion.class);
   }
 
   @Override

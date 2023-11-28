@@ -1,7 +1,6 @@
 package com.asherbernardi.jsgfplugin.psi.impl;
 
 import com.asherbernardi.jsgfplugin.psi.reference.GrammarNameReference;
-import com.asherbernardi.jsgfplugin.psi.reference.ImportRuleNameReference;
 import com.asherbernardi.jsgfplugin.psi.reference.LocalReferencePair;
 import com.asherbernardi.jsgfplugin.psi.reference.OtherFileGrammarNameReference;
 import com.asherbernardi.jsgfplugin.psi.reference.OtherFileReferencePair;
@@ -36,44 +35,6 @@ public interface JsgfPsiImplInjections {
   /*
    **********   GrammarName methods  **********
    */
-
-  @NotNull
-  static String getName(JsgfGrammarName grammarName) {
-    return stubify(grammarName, GrammarNameStub::getFQGN, JsgfGrammarName::getFQGN);
-  }
-
-  static PsiElement setName(JsgfGrammarName grammarName, @NotNull String newName) {
-    return grammarName.setFQGN(newName);
-  }
-
-  static @NotNull SearchScope getUseScope(JsgfGrammarName grammarName) {
-    return GlobalSearchScope.allScope(grammarName.getProject());
-  }
-
-  static ItemPresentation getPresentation(JsgfGrammarName grammarName) {
-    return new ItemPresentation() {
-      @Override
-      public String getPresentableText() {
-        return grammarName.getName();
-      }
-
-      @Override
-      public String getLocationString() {
-        PsiFile file = grammarName.getContainingFile();
-        return file == null ? "" : file.getName();
-      }
-
-      @Override
-      public Icon getIcon(boolean unused) {
-        return JsgfIcons.FILE;
-      }
-    };
-  }
-
-  @Nullable
-  static PsiElement getNameIdentifier(JsgfGrammarName grammarName) {
-    return grammarName;
-  }
 
   /*
    **********   ImportStatement methods  **********
@@ -122,27 +83,23 @@ public interface JsgfPsiImplInjections {
   }
 
   static String getUnqualifiedRuleName(JsgfRuleImportName importName) {
-    return unqualifiedRuleNameFromFQRN(importName.getFullyQualifiedRuleName());
+    return unqualifiedRuleNameFromFQRN(importName.getFQRN());
   }
 
   static String getFullyQualifiedGrammarName(JsgfRuleImportName importName) {
-    return fullyQualifiedGrammarNameFromFQRN(importName.getFullyQualifiedRuleName());
+    return fullyQualifiedGrammarNameFromFQRN(importName.getFQRN());
   }
 
   static String getSimpleGrammarName(JsgfRuleImportName importName) {
-    return simpleGrammarNameFromFQRN(importName.getFullyQualifiedRuleName());
+    return simpleGrammarNameFromFQRN(importName.getFQRN());
   }
 
   static String getPackageName(JsgfRuleImportName importName) {
-    return packageNameFromFQRN(importName.getFullyQualifiedRuleName());
-  }
-
-  static String getFullyQualifiedRuleName(JsgfRuleImportName importName) {
-    return stubify(importName, ImportStub::getFullyQualifiedRuleName, JsgfRuleImportName::getFQRN);
+    return packageNameFromFQRN(importName.getFQRN());
   }
 
   static OtherFileReferencePair getReferencePair(JsgfRuleImportName importName) {
-    String fqrn = importName.getFullyQualifiedRuleName();
+    String fqrn = importName.getFQRN();
     int lastDot = fqrn.lastIndexOf('.');
     OtherFileGrammarNameReference grammarReference;
     if (lastDot != -1) {
@@ -150,14 +107,8 @@ public interface JsgfPsiImplInjections {
     } else {
       grammarReference = null;
     }
-    OtherFileRuleNameReference ruleReference;
-    ruleReference = new ImportRuleNameReference(importName, new TextRange(lastDot + 1, fqrn.length()));
+    OtherFileRuleNameReference ruleReference = new OtherFileRuleNameReference(importName, new TextRange(lastDot + 1, fqrn.length()), grammarReference);
     return new OtherFileReferencePair(grammarReference, ruleReference);
-  }
-
-  static @NotNull SearchScope getUseScope(JsgfRuleImportName importName) {
-    // an import is by definition global
-    return GlobalSearchScope.allScope(importName.getProject());
   }
 
   /*
@@ -176,79 +127,36 @@ public interface JsgfPsiImplInjections {
     int lastDot = fqrn.lastIndexOf('.');
     if (lastDot != -1) {
       TextRange grammarRange = new TextRange(0, lastDot);
-      grammarReference = new GrammarNameReference(ruleReferenceName, grammarRange, fqrn);
+      grammarReference = new GrammarNameReference(ruleReferenceName, grammarRange);
     }
     TextRange ruleRange = new TextRange(lastDot + 1, fqrn.length());
-    ruleReference = new RuleNameReference(ruleReferenceName, ruleRange, fqrn, grammarReference);
+    ruleReference = new RuleNameReference(ruleReferenceName, ruleRange);
     return new LocalReferencePair(grammarReference, ruleReference);
   }
 
-  static @NotNull SearchScope getUseScope(JsgfRuleReferenceName ruleReferenceName) {
-    JsgfRuleDeclarationName resolve = (JsgfRuleDeclarationName) ruleReferenceName.getReference().resolve();
-    if (resolve != null && resolve.isPublicRule()) {
-      return GlobalSearchScope.allScope(ruleReferenceName.getProject());
+  @Nullable
+  static String labelFromFQRN(String fqrn) {
+    // This is for the unique rule type that we use where you specify a field of the rule
+    int atIndex = fqrn.indexOf("@");
+    if (atIndex != -1) {
+      return fqrn.substring(atIndex + 1);
     }
-    return new LocalSearchScope(ruleReferenceName.getContainingFile());
+    return null;
   }
+
+  @Nullable
+  static String getLabel(JsgfRuleReferenceName ruleReferenceName) {
+    return labelFromFQRN(ruleReferenceName.getFQRN());
+  }
+
 
   /*
    **********   RuleDeclarationName methods  **********
    */
 
-  @NotNull
-  static String getName(JsgfRuleDeclarationName ruleDeclarationName) {
-    return stubify(ruleDeclarationName, RuleDeclarationStub::getName, JsgfRuleDeclarationName::getRuleName);
-  }
-
-  static PsiElement setName(JsgfRuleDeclarationName ruleDeclarationName,
-      @NotNull String name) throws IncorrectOperationException {
-    return ruleDeclarationName.setRuleName(name);
-  }
-
   static boolean isPublicRule(JsgfRuleDeclarationName ruleDeclarationName) {
     return stubify(ruleDeclarationName, RuleDeclarationStub::isPublicRule,
         rdn -> ((JsgfRuleDefinition) rdn.getParent().getParent()).isPublicRule());
-  }
-
-  static ItemPresentation getPresentation(JsgfRuleDeclarationName ruleDeclarationName) {
-    return new ItemPresentation() {
-      @Override
-      public String getPresentableText() {
-        return "<" + ruleDeclarationName.getRuleName() + ">";
-      }
-
-      @Override
-      public String getLocationString() {
-        PsiFile file = ruleDeclarationName.getContainingFile();
-        return file == null ? "" : file.getName();
-      }
-
-      /**
-       * This is the icon which gets called when viewing the structure, we
-       * want to make sure the public icon is accurate here
-       * @param unused unused...
-       * @return an icon, with an extra 'public' icon added if the rule is public
-       */
-      @Override
-      public Icon getIcon(boolean unused) {
-        if (ruleDeclarationName.isPublicRule()) {
-          return IconManager.getInstance().createRowIcon(JsgfIcons.FILE, PlatformIcons.PUBLIC_ICON);
-        }
-        return JsgfIcons.FILE;
-      }
-    };
-  }
-
-  @Nullable
-  static PsiElement getNameIdentifier(JsgfRuleDeclarationName ruleDeclarationName) {
-    return ruleDeclarationName;
-  }
-
-  @NotNull
-  static SearchScope getUseScope(JsgfRuleDeclarationName ruleDeclarationName) {
-    return ruleDeclarationName.isPublicRule()
-        ? GlobalSearchScope.allScope(ruleDeclarationName.getProject())
-        : new LocalSearchScope(ruleDeclarationName.getContainingFile());
   }
 
   /*

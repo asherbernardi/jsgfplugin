@@ -7,7 +7,6 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.StubBasedPsiElement;
 import com.asherbernardi.jsgfplugin.psi.stub.ImportStub;
 import com.asherbernardi.jsgfplugin.psi.reference.OtherFileReferencePair;
-import com.intellij.psi.search.SearchScope;
 
 public interface JsgfRuleImportName extends RuleName, StubBasedPsiElement<ImportStub> {
 
@@ -21,14 +20,6 @@ public interface JsgfRuleImportName extends RuleName, StubBasedPsiElement<Import
 
   String getPackageName();
 
-  //WARNING: getReferences(...) is skipped
-  //matching getReferences(JsgfRuleImportName, ...)
-  //methods are not found in JsgfPsiImplInjections
-
   OtherFileReferencePair getReferencePair();
-
-  @NotNull SearchScope getUseScope();
-
-  String getFullyQualifiedRuleName();
 
 }

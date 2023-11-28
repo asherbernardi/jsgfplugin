@@ -88,7 +88,6 @@ private grammarDeclaration_recover ::= !(SEMICOLON)
 grammarName ::= IDENTIFIER {
   mixin = "com.asherbernardi.jsgfplugin.psi.impl.GrammarNameMixin"
   implements = "com.asherbernardi.jsgfplugin.psi.GrammarName"
-  methods = [getName setName getPresentation getUseScope getNameIdentifier]
   stubClass = "com.asherbernardi.jsgfplugin.psi.stub.GrammarNameStub"
   elementTypeFactory = "com.asherbernardi.jsgfplugin.psi.stub.GrammarNameStubElementType.getInstance"
 }
@@ -119,8 +118,7 @@ ruleImportName ::= RULE_NAME_IDENTIFIER (PERIOD RULE_NAME_IDENTIFIER)* [PERIOD S
   implements = "com.asherbernardi.jsgfplugin.psi.RuleName"
   mixin = "com.asherbernardi.jsgfplugin.psi.impl.RuleImportNameMixin"
   methods = [isStarImport getUnqualifiedRuleName getFullyQualifiedGrammarName
-             getSimpleGrammarName getPackageName getReferences getReferencePair getUseScope
-             getFullyQualifiedRuleName]
+             getSimpleGrammarName getPackageName getReferencePair]
   stubClass = "com.asherbernardi.jsgfplugin.psi.stub.ImportStub"
   elementTypeFactory = "com.asherbernardi.jsgfplugin.psi.stub.ImportStubElementType.getInstance"
   recoverWhile = ruleImport_recover
@@ -151,7 +149,7 @@ private ruleDeclaration_recover ::= !(EQUALS|RANGLE|SEMICOLON|PUBLIC|LBRACE)
 ruleDeclarationName ::= RULE_NAME_IDENTIFIER {
   mixin = "com.asherbernardi.jsgfplugin.psi.impl.RuleDeclarationNameMixin"
   implements = ["com.asherbernardi.jsgfplugin.psi.RuleName"]
-  methods = [getName setName isPublicRule getPresentation getNameIdentifier getUseScope]
+  methods = [isPublicRule]
   stubClass = "com.asherbernardi.jsgfplugin.psi.stub.RuleDeclarationStub"
   elementTypeFactory = "com.asherbernardi.jsgfplugin.psi.stub.RuleDeclarationStubElementType.getInstance"
 }
@@ -173,7 +171,7 @@ private ruleReference_recover ::=
 ruleReferenceName ::= RULE_NAME_IDENTIFIER (PERIOD RULE_NAME_IDENTIFIER)* {
   mixin = "com.asherbernardi.jsgfplugin.psi.impl.RuleReferenceNameMixin"
   implements = "com.asherbernardi.jsgfplugin.psi.RuleName"
-  methods = [getReferencePair getUseScope]
+  methods = [getReferencePair]
 }
 
 terminal_exp ::= TERMINAL_IDENTIFIER | IDENTIFIER {
@@ -235,7 +233,7 @@ unary_operation_exp ::= expansion (STAR|PLUS|tag) {
 private primary ::= terminal_exp | string_exp | ruleReference_exp | group_group
 
 private group_group ::= parentheses_group_exp | optional_group_exp
-fake group_exp ::= (LPAREN|RBRACK) expansion (RPAREN|RBRACK) {
+fake group_exp ::= (LPAREN|RBRACK) expansion? (RPAREN|RBRACK) {
   mixin = "com.asherbernardi.jsgfplugin.psi.impl.GroupMixin"
   methods = [isOptionalGroup]
 }

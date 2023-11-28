@@ -14,6 +14,14 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiReference;
 import com.intellij.psi.PsiWhiteSpace;
 import com.intellij.psi.impl.source.tree.LeafElement;
+import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.search.LocalSearchScope;
+import com.intellij.psi.search.SearchScope;
+import com.asherbernardi.jsgfplugin.JsgfIcons;
+import com.asherbernardi.jsgfplugin.JsgfUtil;
+import com.asherbernardi.jsgfplugin.psi.AbstractJsgfPsiElement;
+import com.asherbernardi.jsgfplugin.psi.JsgfRuleDeclarationName;
+import com.asherbernardi.jsgfplugin.psi.JsgfRuleReferenceName;
 import javax.swing.Icon;
 import org.jetbrains.annotations.NotNull;
 
@@ -36,6 +44,11 @@ public abstract class RuleReferenceNameMixin extends AbstractJsgfPsiElement impl
   @NotNull
   public PsiReference @NotNull [] refs() {
     return getReferencePair().getReferenceArray();
+  }
+
+  @Override
+  public String getFQRN() {
+    return getText();
   }
 
   @Override
@@ -89,5 +102,13 @@ public abstract class RuleReferenceNameMixin extends AbstractJsgfPsiElement impl
         return JsgfIcons.FILE;
       }
     };
+  }
+
+  public @NotNull SearchScope getUseScope() {
+    JsgfRuleDeclarationName resolve = (JsgfRuleDeclarationName) getReference().resolve();
+    if (resolve != null && resolve.isPublicRule()) {
+      return GlobalSearchScope.allScope(getProject());
+    }
+    return new LocalSearchScope(getContainingFile());
   }
 }

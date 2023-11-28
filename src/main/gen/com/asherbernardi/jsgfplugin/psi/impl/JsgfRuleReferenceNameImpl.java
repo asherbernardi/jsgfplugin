@@ -10,7 +10,6 @@ import com.intellij.psi.util.PsiTreeUtil;
 import static com.asherbernardi.jsgfplugin.psi.JsgfBnfTypes.*;
 import com.asherbernardi.jsgfplugin.psi.*;
 import com.asherbernardi.jsgfplugin.psi.reference.LocalReferencePair;
-import com.intellij.psi.search.SearchScope;
 
 public class JsgfRuleReferenceNameImpl extends RuleReferenceNameMixin implements JsgfRuleReferenceName {
 
@@ -31,11 +30,6 @@ public class JsgfRuleReferenceNameImpl extends RuleReferenceNameMixin implements
   @Override
   public @NotNull LocalReferencePair getReferencePair() {
     return JsgfPsiImplInjections.getReferencePair(this);
-  }
-
-  @Override
-  public @NotNull SearchScope getUseScope() {
-    return JsgfPsiImplInjections.getUseScope(this);
   }
 
 }

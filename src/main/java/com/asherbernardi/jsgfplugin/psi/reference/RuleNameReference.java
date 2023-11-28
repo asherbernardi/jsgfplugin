@@ -1,5 +1,7 @@
 package com.asherbernardi.jsgfplugin.psi.reference;
 
+import com.asherbernardi.jsgfplugin.JsgfLanguage;
+import com.asherbernardi.jsgfplugin.psi.impl.JsgfPsiImplInjections;
 import com.intellij.codeInsight.completion.InsertHandler;
 import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
@@ -8,6 +10,8 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiPolyVariantReference;
 import com.intellij.psi.PsiReferenceBase;
 import com.intellij.psi.ResolveResult;
+import com.intellij.psi.util.CachedValueProvider;
+import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.psi.util.PsiUtilCore;
 import com.asherbernardi.jsgfplugin.JsgfIcons;
 import com.asherbernardi.jsgfplugin.JsgfUtil;
@@ -33,26 +37,8 @@ import java.util.regex.Pattern;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class RuleNameReference extends PsiReferenceBase<JsgfRuleReferenceName>
+public class RuleNameReference extends JsgfDefaultCachedReference<JsgfRuleReferenceName>
     implements PsiPolyVariantReference {
-  /**
-   * The unqualified name of the rule to which this reference references.
-   * If reference mode is UNQUALIFIED, it is equal to myElement.getText().
-   */
-  private final String ruleName;
-  /**
-   * The name of the grammar of the rule to which this reference references.
-   * Is null unless reference mode is QUALIFIED or FULLY_QUALIFIED.
-   */
-  private String simpleGrammarName = null;
-  /**
-   * The name of the package of the rule to which this reference references.
-   * Is null unless reference mode is FULLY_QUALIFIED.
-   */
-  private String packageName = null;
-  private final REFERENCE_MODE mode;
-
-  private GrammarNameReference grammarNameReference;
 
   /**
    * Rule references in JSGF can be:
@@ -76,82 +62,96 @@ public class RuleNameReference extends PsiReferenceBase<JsgfRuleReferenceName>
     context.getEditor().getCaretModel().moveToOffset(offset + 1);
   };
 
-  public RuleNameReference(@NotNull JsgfRuleReferenceName element, TextRange range, String qualifiedName, @Nullable GrammarNameReference grammarNameReference) {
+  private static REFERENCE_MODE getMode(JsgfRuleReferenceName element) {
+    String fqrn = element.getFQRN();
+    String fqgn = JsgfPsiImplInjections.fullyQualifiedGrammarNameFromFQRN(fqrn);
+    String packageName = JsgfPsiImplInjections.packageNameFromFQGN(fqgn);
+    if (!packageName.isEmpty()) {
+      return REFERENCE_MODE.FULLY_QUALIFIED;
+    } else if (!fqgn.isEmpty()) {
+      return REFERENCE_MODE.QUALIFIED;
+    } else {
+      return REFERENCE_MODE.UNQUALIFIED;
+    }
+  }
+
+  public RuleNameReference(@NotNull JsgfRuleReferenceName element, TextRange range) {
     super(element, range);
-    Matcher matcherQualified = (Pattern.compile("([^.]+)\\.([^.]+)")).matcher(qualifiedName);
-    Matcher matcherFullyQualified = (Pattern.compile("(.*)\\.([^.]+)\\.([^.]+)")).matcher(qualifiedName);
-    // If the name has one period it is qualified
-    if (matcherQualified.matches()) {
-      mode = REFERENCE_MODE.QUALIFIED;
-      ruleName = matcherQualified.group(2);
-      simpleGrammarName = matcherQualified.group(1);
-      if (grammarNameReference == null) throw new IllegalArgumentException("Must provide a GrammarNameReference for a qualified rule reference");
-      this.grammarNameReference = grammarNameReference;
-    }
-    // If the name has more than one period it is fully-qualified
-    else if (matcherFullyQualified.matches()) {
-      mode = REFERENCE_MODE.FULLY_QUALIFIED;
-      ruleName = matcherFullyQualified.group(3);
-      simpleGrammarName = matcherFullyQualified.group(2);
-      packageName = matcherFullyQualified.group(1);
-      if (grammarNameReference == null) throw new IllegalArgumentException("Must provide a GrammarNameReference for a qualified rule reference");
-      this.grammarNameReference = grammarNameReference;
-    }
-    // If the name has no periods it is unqualified
-    else {
-      mode = REFERENCE_MODE.UNQUALIFIED;
-      ruleName = qualifiedName;
-      this.grammarNameReference = null;
-    }
   }
 
-  public boolean canResolve() {
-    return resolve() != null;
-  }
-
-  @NotNull
   @Override
-  public JsgfResolveResultRule[] multiResolve(boolean incompleteCode) {
-    Set<JsgfResolveResultRule> results = new HashSet<>();
-    JsgfFile file = (JsgfFile) myElement.getContainingFile();
-    // Local rule names take precedence
-    if (mode == REFERENCE_MODE.UNQUALIFIED) {
-      final List<JsgfRuleDeclarationName> names = JsgfUtil.findRulesInFile(file, ruleName);
-      for (JsgfRuleDeclarationName name : names) {
-        results.add(new JsgfResolveResultRule(name, true));
-      }
-    }
-    // If we can't find the rule declared in this grammar, or this not an unqualified rule check the imports
-    // We only use cached import resolutions, since we assume that the imports would be resolved
-    // before the rule references.
-    if (results.isEmpty()) {
-      final List<@NotNull JsgfRuleImportName> importList = new ArrayList<>();
-      switch (mode) {
-        // If mode is unqualified then we need to consider all imports
-        case UNQUALIFIED:
-          importList.addAll(file.getImportNames());
-          break;
-        // If mode is QUALIFIED or FULLY-QUALIFIED then we pull the resolve from the attached
-        // grammar reference
-        case QUALIFIED:
-        case FULLY_QUALIFIED:
-          JsgfResolveResultGrammar[] grammarResolve = grammarNameReference.multiResolve(false);
-          Arrays.stream(grammarResolve).map(JsgfResolveResultGrammar::getImporter)
-              .forEachOrdered(importList::add);
-          break;
-      }
-      for (@NotNull JsgfRuleImportName importName : importList) {
-        addResolvesFromImport(importName, results);
-      }
-    }
-    return results.toArray(new JsgfResolveResultRule[0]);
+  protected CachedValueProvider<ResolveResult[]> getCachedValueProvider(JsgfRuleReferenceName element) {
+    return new MyCachedValueProvider(element);
   }
 
-  private void addResolvesFromImport(JsgfRuleImportName importName, Set<JsgfResolveResultRule> results) {
-    // Add all the matching rules of a '*' import
-    if (importName.isStarImport()) {
+  private static class MyCachedValueProvider implements CachedValueProvider<ResolveResult[]> {
+
+    private final JsgfRuleReferenceName element;
+    private final REFERENCE_MODE mode;
+
+    MyCachedValueProvider(JsgfRuleReferenceName element) {
+      this.element = element;
+      mode = getMode(element);
+    }
+
+    @Override
+    public @Nullable Result<ResolveResult[]> compute() {
+      Set<JsgfResolveResultRule> results = new HashSet<>();
+      List<Object> dependencies = new ArrayList<>();
+      JsgfFile file = (JsgfFile) element.getContainingFile();
+      dependencies.add(file);
+      dependencies.add(element);
+      String ruleName = element.getRuleName();
+      // Local rule names take precedence
+      if (mode == REFERENCE_MODE.UNQUALIFIED) {
+        final List<JsgfRuleDeclarationName> names = JsgfUtil.findRulesInFile(file, ruleName);
+        for (JsgfRuleDeclarationName name : names) {
+          results.add(new JsgfResolveResultRule(name, true));
+        }
+      }
+      // If we can't find the rule declared in this grammar, or this not an unqualified rule check the imports
+      // We only use cached import resolutions, since we assume that the imports would be resolved
+      // before the rule references.
+      if (results.isEmpty()) {
+        final List<@NotNull JsgfRuleImportName> importList = new ArrayList<>();
+        switch (mode) {
+          // If mode is unqualified then we need to consider all imports
+          case UNQUALIFIED:
+            importList.addAll(file.getImportNames());
+            break;
+          // If mode is QUALIFIED or FULLY-QUALIFIED then we pull the resolve from the attached
+          // grammar reference
+          case QUALIFIED:
+          case FULLY_QUALIFIED:
+              GrammarNameReference grammarNameReference = element.getReferencePair().getGrammarReference();
+              ResolveResult[] grammarResolve = grammarNameReference.multiResolve(false);
+              Arrays.stream(grammarResolve)
+                  .map(JsgfResolveResultGrammar.class::cast)
+                  .map(JsgfResolveResultGrammar::getImporter)
+                .forEachOrdered(importList::add);
+          break;
+        }
+        for (@NotNull JsgfRuleImportName importName : importList) {
+          addResolvesFromImport(importName, ruleName, results);
+          Arrays.stream(importName.getReferencePair().getGrammarReference().multiResolve(false))
+              .map(ResolveResult::getElement).forEach(dependencies::add);
+          dependencies.add(importName);
+        }
+      }
+      if (results.isEmpty()) {
+        // For broken references, re-compute at any change
+        dependencies.add(PsiModificationTracker.getInstance(element.getProject()).forLanguage(
+            JsgfLanguage.INSTANCE));
+      }
+      return new Result<>(results.toArray(new JsgfResolveResultRule[0]), dependencies.toArray());
+    }
+  }
+
+  private static void addResolvesFromImport(JsgfRuleImportName importName, String ruleName, Set<JsgfResolveResultRule> results) {
       ResolveResult[] importResolve =
           importName.getReferencePair().getRuleReference().multiResolve(false);
+    // Add all the matching rules of a '*' import
+    if (importName.isStarImport()) {
       // We can assume the element for the resolve result is a rule name, because we selected
       // the second element from importName.getReferences()
       Arrays.stream(importResolve)
@@ -161,21 +161,10 @@ public class RuleNameReference extends PsiReferenceBase<JsgfRuleReferenceName>
     }
     // Add imports with a name that matches
     else if (importName.getUnqualifiedRuleName().equals(ruleName)) {
-      ResolveResult[] importResolve =
-          importName.getReferencePair().getRuleReference().multiResolve(false);
       Arrays.stream(importResolve)
           .map(JsgfResolveResultRule.class::cast)
           .forEachOrdered(results::add);
     }
-  }
-
-  @Nullable
-  @Override
-  public PsiElement resolve() {
-    ResolveResult[] resolveResults = multiResolve(false);
-    if (resolveResults.length == 1)
-      return resolveResults[0].getElement();
-    return null;
   }
 
   @NotNull
@@ -208,7 +197,7 @@ public class RuleNameReference extends PsiReferenceBase<JsgfRuleReferenceName>
     final Map<String, Integer> qualifiedNameCount = new HashMap<>();
     final List<ImportNameLookupElementBuilder> builders = new ArrayList<>();
     for (JsgfRuleImportName importName : importNames) {
-      for (JsgfRuleDeclarationName importedRule : JsgfUtil.findImportRules(importName, true)) {
+      for (JsgfRuleDeclarationName importedRule : JsgfUtil.resolveImportRules(importName)) {
         String name = importedRule.getRuleName();
         String qualifiedName = importName.getSimpleGrammarName() + "." + name;
         String fullyQualifiedName = importName.getFullyQualifiedGrammarName() + "." + name;
