@@ -87,11 +87,9 @@ public class RuleNameReference extends JsgfDefaultCachedReference<JsgfRuleRefere
   private static class MyCachedValueProvider implements CachedValueProvider<ResolveResult[]> {
 
     private final JsgfRuleReferenceName element;
-    private final REFERENCE_MODE mode;
 
     MyCachedValueProvider(JsgfRuleReferenceName element) {
       this.element = element;
-      mode = getMode(element);
     }
 
     @Override
@@ -102,6 +100,7 @@ public class RuleNameReference extends JsgfDefaultCachedReference<JsgfRuleRefere
       dependencies.add(file);
       dependencies.add(element);
       String ruleName = element.getRuleName();
+      REFERENCE_MODE mode = getMode(element);
       // Local rule names take precedence
       if (mode == REFERENCE_MODE.UNQUALIFIED) {
         final List<JsgfRuleDeclarationName> names = JsgfUtil.findRulesInFile(file, ruleName);

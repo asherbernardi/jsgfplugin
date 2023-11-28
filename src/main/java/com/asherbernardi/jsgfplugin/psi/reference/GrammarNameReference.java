@@ -79,11 +79,9 @@ public class GrammarNameReference extends JsgfDefaultCachedReference<JsgfRuleRef
   private static class MyCachedValueProvider implements CachedValueProvider<ResolveResult[]> {
 
     private final JsgfRuleReferenceName element;
-    private final REFERENCE_MODE mode;
 
     MyCachedValueProvider(JsgfRuleReferenceName element) {
       this.element = element;
-      mode = getMode(element);
     }
 
     @Override
@@ -103,6 +101,7 @@ public class GrammarNameReference extends JsgfDefaultCachedReference<JsgfRuleRef
       String ruleName = JsgfPsiImplInjections.unqualifiedRuleNameFromFQRN(fqrn);
       String simpleGrammarName = JsgfPsiImplInjections.simpleGrammarNameFromFQRN(fqrn);
       String packageName = JsgfPsiImplInjections.packageNameFromFQRN(fqrn);
+      REFERENCE_MODE mode = getMode(element);
       switch (mode) {
         case QUALIFIED:
           allImportNames.stream()
