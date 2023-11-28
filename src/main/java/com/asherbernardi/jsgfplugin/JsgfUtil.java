@@ -280,24 +280,32 @@ public class JsgfUtil {
     );
   }
 
-  public static List<LookupElement> allFilesAsImportVariants(JsgfRuleImportName importName) {
-    Project project = importName.getProject();
-    Module module = ModuleUtil.findModuleForPsiElement(importName);
+  public static List<LookupElement> allFilesAsImportVariantsFromRuleReference(JsgfRuleImportName importName) {
+    // We treat the rule name as if it were the grammar name
+    return allFilesAsImportVariants(importName.getFullyQualifiedGrammarName(), importName);
+  }
+
+  public static List<LookupElement> allFilesAsImportVariantsFromGrammarReference(JsgfRuleImportName importName) {
+    return allFilesAsImportVariants(importName.getPackageName(), importName);
+  }
+
+  private static List<LookupElement> allFilesAsImportVariants(String packageNameSoFar, PsiElement psi) {
+    Project project = psi.getProject();
+    Module module = ModuleUtil.findModuleForPsiElement(psi);
     if (module == null) return Collections.emptyList();
     List<LookupElement> result = new ArrayList<>();
     // Add by pure grammar name
-    String importGrammarName = importName.getFullyQualifiedGrammarName();
-    JsgfFile myFile = (JsgfFile) importName.getContainingFile();
+    JsgfFile myFile = (JsgfFile) psi.getContainingFile();
     JsgfGrammarName myGrammarName = myFile.getGrammarName();
     String myGrammarNameString = myGrammarName != null ? myGrammarName.getName() : "";
     Collection<JsgfGrammarName> allMatchingGrammars = GrammarStubIndex.getAllGrammarsInModule(project, module);
     allMatchingGrammars.stream()
         .filter(gn -> !gn.getName().equals(myGrammarNameString)) // exclude self
-        .filter(gn -> gn.getName().startsWith(importGrammarName))
+        .filter(gn -> gn.getName().startsWith(packageNameSoFar))
         .forEach(gn -> result.add(
             LookupElementBuilder.create(
-                    importGrammarName.isEmpty() ? gn.getFQGN()
-                        : gn.getFQGN().replace(importGrammarName + ".", "")
+                    packageNameSoFar.isEmpty() ? gn.getFQGN()
+                        : gn.getFQGN().replace(packageNameSoFar + ".", "")
                 )
                 .withLookupString(gn.getSimpleGrammarName())
                 .withIcon(JsgfIcons.FILE)
@@ -305,10 +313,9 @@ public class JsgfUtil {
                 .withInsertHandler(GRAMMAR_NAME_HANDLER)
         ));
     // Add by file path
-    String fqgn = importName.getFullyQualifiedGrammarName();
     VirtualFile[] roots = ModuleRootManager.getInstance(module).getSourceRoots();
     for (VirtualFile root : roots) {
-      addVariantsFromRoot(root, myFile.getOriginalFile().getVirtualFile(), fqgn, result);
+      addVariantsFromRoot(root, myFile.getOriginalFile().getVirtualFile(), packageNameSoFar, result);
     }
     return result;
   }
@@ -317,15 +324,18 @@ public class JsgfUtil {
     int offset = context.getTailOffset();
     Project project = context.getProject();
     Editor editor = context.getEditor();
-    WriteCommandAction.runWriteCommandAction(project, () -> editor.getDocument().insertString(offset, "."));
-    context.getEditor().getCaretModel().moveToOffset(offset + 1);
-    AutoPopupController.getInstance(project).scheduleAutoPopup(editor);
+    if (editor.getDocument().getCharsSequence().charAt(editor.getCaretModel().getOffset()) != '.') {
+      WriteCommandAction.runWriteCommandAction(project,
+          () -> editor.getDocument().insertString(offset, "."));
+      context.getEditor().getCaretModel().moveToOffset(offset + 1);
+      AutoPopupController.getInstance(project).scheduleAutoPopup(editor);
+    }
   };
 
-  private static void addVariantsFromRoot(VirtualFile root, VirtualFile excludeFile, String fqgn, List<LookupElement> variants) {
+  private static void addVariantsFromRoot(VirtualFile root, VirtualFile excludeFile, String packageNameSoFar, List<LookupElement> variants) {
     VirtualFile currentFolder = root;
-    if (!fqgn.isEmpty()) {
-      String[] dotSplit = fqgn.split("\\s*\\.\\s*");
+    if (!packageNameSoFar.isEmpty()) {
+      String[] dotSplit = packageNameSoFar.split("\\s*\\.\\s*");
       int i = 0;
       F: while (currentFolder != null && i < dotSplit.length) {
         VirtualFile[] children = currentFolder.getChildren();
@@ -357,17 +367,17 @@ public class JsgfUtil {
         }
       }
       // now we breadth-first search all the folders for Jsgf files
-      // Arbitrarily stopping after visiting 100 files to prevent slow resolution
-      int max = 100;
+      // Arbitrarily stopping after visiting 500 files to prevent slow resolution
+      int max = 500;
       Deque<VirtualFile> queue = new LinkedList<>(Arrays.asList(children));
       int i = 0;
       while (!queue.isEmpty()) {
-        if (i++ > max) break;
         VirtualFile current = queue.poll();
         if (current.isDirectory()) {
           Arrays.asList(current.getChildren()).forEach(queue::offer);
         } else {
           if (!current.getFileType().equals(JsgfFileType.INSTANCE)) continue;
+          if (i++ > max) break;
           if (current.equals(excludeFile)) continue;
           LinkedList<String> variant = new LinkedList<>();
           variant.add(current.getNameWithoutExtension());

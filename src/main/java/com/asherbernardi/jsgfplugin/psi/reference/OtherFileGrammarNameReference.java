@@ -1,8 +1,14 @@
 package com.asherbernardi.jsgfplugin.psi.reference;
 
 import com.asherbernardi.jsgfplugin.JsgfLanguage;
+import com.asherbernardi.jsgfplugin.psi.RuleNameSplit;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtil;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiPolyVariantReference;
 import com.intellij.psi.ResolveResult;
 import com.intellij.psi.util.CachedValueProvider;
@@ -12,6 +18,8 @@ import com.asherbernardi.jsgfplugin.JsgfUtil;
 import com.asherbernardi.jsgfplugin.psi.JsgfFile;
 import com.asherbernardi.jsgfplugin.psi.JsgfRuleImportName;
 import com.intellij.psi.util.PsiModificationTracker;
+import com.intellij.util.IncorrectOperationException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
@@ -78,5 +86,40 @@ public class OtherFileGrammarNameReference extends JsgfDefaultCachedReference<Js
     if (resolveResults.length == 1)
       return resolveResults[0].getElement();
     return null;
+  }
+
+  @Override
+  public Object @NotNull [] getVariants() {
+    return JsgfUtil.allFilesAsImportVariantsFromGrammarReference(getElement()).toArray();
+  }
+
+  @Override
+  public PsiElement bindToElement(@NotNull PsiElement element) throws IncorrectOperationException {
+    if (!(element instanceof PsiFile file)) return super.bindToElement(element);
+    String pathString = file.getVirtualFile().getCanonicalPath();
+    if (pathString == null) {
+      throw new IncorrectOperationException("Cannot bind reference to file with unknown file path: " + getClass());
+    }
+    Path path = Path.of(pathString);
+    Module module = ModuleUtil.findModuleForPsiElement(element);
+    VirtualFile[] roots = ModuleRootManager.getInstance(module).getContentRoots();
+    Path selectedRootPath = null;
+    for (VirtualFile root : roots) {
+      String rootPathString = root.getCanonicalPath();
+      if (rootPathString == null) continue;
+      Path rootPath = Path.of(rootPathString);
+      if (path.startsWith(rootPath)) {
+        selectedRootPath = rootPath;
+        break;
+      }
+    }
+    if (selectedRootPath == null) {
+      throw new IncorrectOperationException("Could not identify the sources root for the file: " + pathString);
+    }
+    Path pathFromRoot = selectedRootPath.relativize(path);
+    String pathFromRootString = JsgfUtil.stripExtension(pathFromRoot.toString());
+    RuleNameSplit name = RuleNameSplit.fromFQRN(myElement.getFQRN());
+    String newQualifiedName = name.replaceFQGN(JsgfUtil.replaceSeparatorWithDot(pathFromRootString));
+    return myElement.setFQRN(newQualifiedName);
   }
 }

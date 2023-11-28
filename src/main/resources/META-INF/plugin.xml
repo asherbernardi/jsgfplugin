@@ -37,6 +37,7 @@
     <backspaceHandlerDelegate implementation="com.asherbernardi.jsgfplugin.JsgfBackspaceHandler"/>
     <quoteHandler fileType="JSGF" className="com.asherbernardi.jsgfplugin.JsgfQuoteHandler"/>
     <lang.namesValidator language="JSGF" implementationClass="com.asherbernardi.jsgfplugin.JsgfRuleNameIdentifierValidator"/>
+    <renameInputValidator implementation="com.asherbernardi.jsgfplugin.JsgfRenameValidator"/>
     <lang.formatter language="JSGF" implementationClass="com.asherbernardi.jsgfplugin.formatting.JsgfFormattingModelBuilder"/>
     <stubElementTypeHolder class="com.asherbernardi.jsgfplugin.psi.stub.JsgfStubElementTypes"/>
     <stubIndex implementation="com.asherbernardi.jsgfplugin.psi.stub.RuleStubIndex"/>

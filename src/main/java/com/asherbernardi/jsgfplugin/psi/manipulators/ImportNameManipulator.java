@@ -1,10 +1,15 @@
 package com.asherbernardi.jsgfplugin.psi.manipulators;
 
+import com.asherbernardi.jsgfplugin.JsgfFileType;
+import com.asherbernardi.jsgfplugin.JsgfUtil;
 import com.asherbernardi.jsgfplugin.psi.RuleNameSplit;
+import com.intellij.openapi.fileTypes.FileNameMatcher;
+import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.psi.AbstractElementManipulator;
 import com.intellij.util.IncorrectOperationException;
 import com.asherbernardi.jsgfplugin.psi.JsgfRuleImportName;
+import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,8 +23,14 @@ public class ImportNameManipulator extends AbstractElementManipulator<JsgfRuleIm
     RuleNameSplit split = RuleNameSplit.fromFQRN(fqrn);
     String newQualifiedName;
     if (split.hasFQGN() && range.equals(split.getFQGNRange())) {
+      List<FileNameMatcher> fileMatchers = FileTypeManager.getInstance().getAssociations(
+          JsgfFileType.INSTANCE);
+      String simpleGrammarName = newContent;
+      if (fileMatchers.stream().anyMatch(fm -> fm.acceptsCharSequence(newContent))) {
+        simpleGrammarName = JsgfUtil.stripExtension(simpleGrammarName);
+      }
       // New content is a simple grammar name
-      newQualifiedName = split.replaceSimpleGrammarName(newContent);
+      newQualifiedName = split.replaceSimpleGrammarName(simpleGrammarName);
     } else if (range.equals(split.getUQRNRange())) {
       // New content is an unqualified rule name
       if (element.isStarImport()) {

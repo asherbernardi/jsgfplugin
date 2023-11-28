@@ -110,7 +110,7 @@ public class OtherFileRuleNameReference extends JsgfDefaultCachedReference<JsgfR
           .withTypeText("All rules in " + names.get(0).getContainingFile().getName()));
     } else {
       // Otherwise add the grammar names as variants
-      variants.addAll(JsgfUtil.allFilesAsImportVariants(getElement()));
+      variants.addAll(JsgfUtil.allFilesAsImportVariantsFromRuleReference(getElement()));
     }
     return variants.toArray();
   }
