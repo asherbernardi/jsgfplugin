@@ -183,10 +183,12 @@ public class JsgfUtil {
       if (children == null) break;
       String targetNextName = dotSplit[i];
       for (VirtualFile child : children) {
-        if (child.getNameWithoutExtension().equals(targetNextName)) {
-          currentFolder = child;
-          i++;
-          continue F;
+        if (child.isDirectory() || child.getFileType() == JsgfFileType.INSTANCE) {
+          if (child.getNameWithoutExtension().equals(targetNextName)) {
+            currentFolder = child;
+            i++;
+            continue F;
+          }
         }
       }
       break;
@@ -343,10 +345,12 @@ public class JsgfUtil {
           break;
         String targetNextName = dotSplit[i];
         for (VirtualFile child : children) {
-          if (child.getNameWithoutExtension().equals(targetNextName)) {
-            currentFolder = child;
-            i++;
-            continue F;
+          if (child.isDirectory() || child.getFileType() == JsgfFileType.INSTANCE) {
+            if (child.getNameWithoutExtension().equals(targetNextName)) {
+              currentFolder = child;
+              i++;
+              continue F;
+            }
           }
         }
         break;
